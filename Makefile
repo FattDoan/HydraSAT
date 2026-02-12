@@ -53,19 +53,19 @@ gen-yaml: check-cores
 	@python3 gen_compose.py $(CORES)
 
 # LOCAL ALL IN ONE: master + workers on same machine
-up: proto gen-yaml check-file master
+up: gen-yaml check-file master
 	@echo "[Hydra] Launching local swarm..."
 	TARGET_FILE=$(FILE) docker-compose up --build --abort-on-container-exit
 
 # Launch ONLY the Master
 # Usage: make master-up FILE=problem.cnf
-master-up: proto master check-file
+master-up: master check-file
 	@echo "[Hydra] Launching Master Hub..."
 	TARGET_FILE=$(FILE) docker-compose up --build master
 
 # Launch ONLY Workers (connects to Master via environment variable)
 # Usage: make worker-up CORES=4 MASTER_IP=100.x.y.z
-worker-up: proto gen-yaml check-cores
+worker-up: gen-yaml check-cores
 	@echo "[Hydra] Launching $(CORES) workers connecting to $(MASTER_IP)..."
 	# We use the --scale flag to tell docker-compose how many workers to run
 	# and pass the MASTER_IP to the environment
