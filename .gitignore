@@ -9,6 +9,8 @@ __pycache__/
 *.py[cod]
 .env
 
+
+
 # --- Go / Master ---
 # Binaries and object files
 bin/
@@ -19,3 +21,6 @@ pkg/
 .idea/
 .vscode/
 *.log
+
+# yaml
+docker-compose.yaml
