@@ -86,27 +86,39 @@ class SATWorker:
                     print(f"Worker {self.worker_id}: Submitted result for task {task.task_id}")
 
                 except grpc.RpcError as e:
-                    print(f"Worker {self.worker_id}: RPC error: {e}")
-                    time.sleep(5)  # Wait before retrying
+                    # Check if the error is because the Master is gone
+                    if e.code() == grpc.StatusCode.UNAVAILABLE:
+                        print(f"Worker {self.worker_id}: Master is offline. Shutting down gracefully...")
+                        # Breaking the loop allows the 'with' block to close the channel
+                        break
+                    else:
+                        print(f"Worker {self.worker_id}: RPC error: {e}")
+                        time.sleep(5)
+
                 except Exception as e:
                     print(f"Worker {self.worker_id}: Unexpected error: {e}")
-                    time.sleep(5)  # Wait before retrying
+                    break # Exit on unexpected fatal errors
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    # Check if we have an environment variable from Docker, otherwise use arg
+    env_master = os.getenv("MASTER_ADDR") 
+
     parser.add_argument("--master",
                         type=str,
-                        default="master:50051",
+                        default=env_master if env_master else "master:50051",
                         help="Master's address (IP:Port)")
 
     parser.add_argument("--id",
                         type=str,
-                        default="worker-01",
+                        default=os.getenv("WORKER_ID", "worker-01"),
                         help="Unique ID for this worker")
 
     args = parser.parse_args()
-
+    
+    # LOUD debug print so you can see what it's actually using
+    print(f"DEBUG: Final Master Address resolved to: {args.master}")
     
     worker = SATWorker(args.master, args.id)
     worker.run()

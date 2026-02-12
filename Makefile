@@ -65,12 +65,10 @@ master-up: master check-file
 
 # Launch ONLY Workers (connects to Master via environment variable)
 # Usage: make worker-up CORES=4 MASTER_IP=100.x.y.z
-worker-up: gen-yaml check-cores
+worker-up: check-cores
+	MASTER_IP=$(MASTER_IP) python3 gen_compose.py $(CORES)
 	@echo "[Hydra] Launching $(CORES) workers connecting to $(MASTER_IP)..."
-	# We use the --scale flag to tell docker-compose how many workers to run
-	# and pass the MASTER_IP to the environment
-	MASTER_IP=$(MASTER_IP) docker-compose up --build
-
+	MASTER_IP=$(MASTER_IP) docker-compose up --build $(shell grep -o "worker-[0-9]*" docker-compose.yaml | xargs) 
 clean:
 	rm -f master_bin
 	rm -rf go-master/proto/*.go

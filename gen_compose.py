@@ -16,17 +16,20 @@ services:
       - ./cnf_instances:/data
 """
 
-    # Worker Generation with Strict Core Pinning
+    # Worker Generation
     for i in range(num_workers):
         compose_content += f"""
   worker-{i}:
     build:
       context: .
       dockerfile: python-worker/Dockerfile.worker
-    # cpu-pinning: Ensures this worker stays on its own core
     cpuset: "{i}"
-    # We pass the ID and Master address directly to the Python script
-    command: ["--master", "${{MASTER_ADDR:-master:50051}}", "--id", "worker-{i}"]
+    # Use environment variables for cleaner config
+    environment:
+      - MASTER_ADDR=${{MASTER_IP:-master}}:50051
+      - WORKER_ID=worker-{i}
+    # Notice we don't strictly need the command args if we use env vars in Python
+    command: ["--master", "${{MASTER_IP:-master}}:50051", "--id", "worker-{i}"]
 """
 
     with open("docker-compose.yaml", "w") as f:

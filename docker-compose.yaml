@@ -13,52 +13,94 @@ services:
     build:
       context: .
       dockerfile: python-worker/Dockerfile.worker
-    # cpu-pinning: Ensures this worker stays on its own core
     cpuset: "0"
-    # We pass the ID and Master address directly to the Python script
-    command: ["--master", "${MASTER_ADDR:-master:50051}", "--id", "worker-0"]
+    # Use environment variables for cleaner config
+    environment:
+      - MASTER_ADDR=${MASTER_IP:-master}:50051
+      - WORKER_ID=worker-0
+    # Notice we don't strictly need the command args if we use env vars in Python
+    command: ["--master", "${MASTER_IP:-master}:50051", "--id", "worker-0"]
 
   worker-1:
     build:
       context: .
       dockerfile: python-worker/Dockerfile.worker
-    # cpu-pinning: Ensures this worker stays on its own core
     cpuset: "1"
-    # We pass the ID and Master address directly to the Python script
-    command: ["--master", "${MASTER_ADDR:-master:50051}", "--id", "worker-1"]
+    # Use environment variables for cleaner config
+    environment:
+      - MASTER_ADDR=${MASTER_IP:-master}:50051
+      - WORKER_ID=worker-1
+    # Notice we don't strictly need the command args if we use env vars in Python
+    command: ["--master", "${MASTER_IP:-master}:50051", "--id", "worker-1"]
 
   worker-2:
     build:
       context: .
       dockerfile: python-worker/Dockerfile.worker
-    # cpu-pinning: Ensures this worker stays on its own core
     cpuset: "2"
-    # We pass the ID and Master address directly to the Python script
-    command: ["--master", "${MASTER_ADDR:-master:50051}", "--id", "worker-2"]
+    # Use environment variables for cleaner config
+    environment:
+      - MASTER_ADDR=${MASTER_IP:-master}:50051
+      - WORKER_ID=worker-2
+    # Notice we don't strictly need the command args if we use env vars in Python
+    command: ["--master", "${MASTER_IP:-master}:50051", "--id", "worker-2"]
 
   worker-3:
     build:
       context: .
       dockerfile: python-worker/Dockerfile.worker
-    # cpu-pinning: Ensures this worker stays on its own core
     cpuset: "3"
-    # We pass the ID and Master address directly to the Python script
-    command: ["--master", "${MASTER_ADDR:-master:50051}", "--id", "worker-3"]
+    # Use environment variables for cleaner config
+    environment:
+      - MASTER_ADDR=${MASTER_IP:-master}:50051
+      - WORKER_ID=worker-3
+    # Notice we don't strictly need the command args if we use env vars in Python
+    command: ["--master", "${MASTER_IP:-master}:50051", "--id", "worker-3"]
 
   worker-4:
     build:
       context: .
       dockerfile: python-worker/Dockerfile.worker
-    # cpu-pinning: Ensures this worker stays on its own core
     cpuset: "4"
-    # We pass the ID and Master address directly to the Python script
-    command: ["--master", "${MASTER_ADDR:-master:50051}", "--id", "worker-4"]
+    # Use environment variables for cleaner config
+    environment:
+      - MASTER_ADDR=${MASTER_IP:-master}:50051
+      - WORKER_ID=worker-4
+    # Notice we don't strictly need the command args if we use env vars in Python
+    command: ["--master", "${MASTER_IP:-master}:50051", "--id", "worker-4"]
 
   worker-5:
     build:
       context: .
       dockerfile: python-worker/Dockerfile.worker
-    # cpu-pinning: Ensures this worker stays on its own core
     cpuset: "5"
-    # We pass the ID and Master address directly to the Python script
-    command: ["--master", "${MASTER_ADDR:-master:50051}", "--id", "worker-5"]
+    # Use environment variables for cleaner config
+    environment:
+      - MASTER_ADDR=${MASTER_IP:-master}:50051
+      - WORKER_ID=worker-5
+    # Notice we don't strictly need the command args if we use env vars in Python
+    command: ["--master", "${MASTER_IP:-master}:50051", "--id", "worker-5"]
+
+  worker-6:
+    build:
+      context: .
+      dockerfile: python-worker/Dockerfile.worker
+    cpuset: "6"
+    # Use environment variables for cleaner config
+    environment:
+      - MASTER_ADDR=${MASTER_IP:-master}:50051
+      - WORKER_ID=worker-6
+    # Notice we don't strictly need the command args if we use env vars in Python
+    command: ["--master", "${MASTER_IP:-master}:50051", "--id", "worker-6"]
+
+  worker-7:
+    build:
+      context: .
+      dockerfile: python-worker/Dockerfile.worker
+    cpuset: "7"
+    # Use environment variables for cleaner config
+    environment:
+      - MASTER_ADDR=${MASTER_IP:-master}:50051
+      - WORKER_ID=worker-7
+    # Notice we don't strictly need the command args if we use env vars in Python
+    command: ["--master", "${MASTER_IP:-master}:50051", "--id", "worker-7"]
