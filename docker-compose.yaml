@@ -1,0 +1,64 @@
+services:
+  master:
+    build:
+      context: .
+      dockerfile: go-master/Dockerfile.master
+    ports:
+      - "50051:50051"
+    command: ["/data/${TARGET_FILE}"]
+    volumes:
+      - ./cnf_instances:/data
+
+  worker-0:
+    build:
+      context: .
+      dockerfile: python-worker/Dockerfile.worker
+    # cpu-pinning: Ensures this worker stays on its own core
+    cpuset: "0"
+    # We pass the ID and Master address directly to the Python script
+    command: ["--master", "${MASTER_ADDR:-master:50051}", "--id", "worker-0"]
+
+  worker-1:
+    build:
+      context: .
+      dockerfile: python-worker/Dockerfile.worker
+    # cpu-pinning: Ensures this worker stays on its own core
+    cpuset: "1"
+    # We pass the ID and Master address directly to the Python script
+    command: ["--master", "${MASTER_ADDR:-master:50051}", "--id", "worker-1"]
+
+  worker-2:
+    build:
+      context: .
+      dockerfile: python-worker/Dockerfile.worker
+    # cpu-pinning: Ensures this worker stays on its own core
+    cpuset: "2"
+    # We pass the ID and Master address directly to the Python script
+    command: ["--master", "${MASTER_ADDR:-master:50051}", "--id", "worker-2"]
+
+  worker-3:
+    build:
+      context: .
+      dockerfile: python-worker/Dockerfile.worker
+    # cpu-pinning: Ensures this worker stays on its own core
+    cpuset: "3"
+    # We pass the ID and Master address directly to the Python script
+    command: ["--master", "${MASTER_ADDR:-master:50051}", "--id", "worker-3"]
+
+  worker-4:
+    build:
+      context: .
+      dockerfile: python-worker/Dockerfile.worker
+    # cpu-pinning: Ensures this worker stays on its own core
+    cpuset: "4"
+    # We pass the ID and Master address directly to the Python script
+    command: ["--master", "${MASTER_ADDR:-master:50051}", "--id", "worker-4"]
+
+  worker-5:
+    build:
+      context: .
+      dockerfile: python-worker/Dockerfile.worker
+    # cpu-pinning: Ensures this worker stays on its own core
+    cpuset: "5"
+    # We pass the ID and Master address directly to the Python script
+    command: ["--master", "${MASTER_ADDR:-master:50051}", "--id", "worker-5"]

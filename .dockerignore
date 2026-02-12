@@ -1,0 +1,5 @@
+# .dockerignore
+venv/
+.git/
+master_bin
+__pycache__/

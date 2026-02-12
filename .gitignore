@@ -1,0 +1,21 @@
+# --- HydraSAT Specifics ---
+# Compiled binaries (the ones you built with 'go build')
+master_bin
+
+# --- Python / Worker ---
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.env
+
+# --- Go / Master ---
+# Binaries and object files
+bin/
+pkg/
+
+# --- Docker / OS ---
+.DS_Store
+.idea/
+.vscode/
+*.log

@@ -1,0 +1,22 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# <!> Docker images (cache) are built in layers
+# System level stuff
+# these should not change often
+# Uncomment this IF run ganak in C++ mode
+# RUN apt-get update && apt-get install -y libgomp1 && rm -rf /var/lib/apt/lists/
+RUN pip install --upgrade pip
+COPY /src/external/ganak-linux-amd64/ganak /usr/local/bin/ganak
+RUN chmod +x /usr/local/bin/ganak
+
+# Dependencies
+COPY python-worker/requirements.txt .
+RUN pip install -r requirements.txt
+
+# Code (changes often)
+COPY python-worker/ .
+ENV PYTHONUNBUFFERED=1
+# We use ENTRYPOINT so we can pass arguments via docker-compose the address of the master
+ENTRYPOINT ["python", "worker.py"]

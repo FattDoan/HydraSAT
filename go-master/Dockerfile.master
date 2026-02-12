@@ -1,0 +1,21 @@
+FROM golang:1.25-alpine AS builder
+WORKDIR /app
+
+# Copy the go.mod and go.sum from the subfolder
+COPY go-master/go.mod go-master/go.sum ./
+RUN go mod download
+
+# Copy the rest of the Master source and the shared Protos
+COPY go-master/ .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o master_bin main.go
+
+FROM alpine:latest
+WORKDIR /root/
+COPY --from=builder /app/master_bin .
+
+# Expose the gRPC port
+EXPOSE 50051
+
+# ENTRYPOINT helps append the filename at the end of docker run command
+ENTRYPOINT ["./master_bin"]
