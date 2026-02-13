@@ -55,22 +55,22 @@ gen-yaml: check-cores
 # LOCAL ALL IN ONE: master + workers on same machine
 up: gen-yaml check-file master
 	@echo "[Hydra] Launching local swarm..."
-	TARGET_FILE=$(FILE) docker-compose up --build --abort-on-container-exit
+	TARGET_FILE=$(FILE) docker compose up --build --abort-on-container-exit
 
 # Launch ONLY the Master
 # Usage: make master-up FILE=problem.cnf
 master-up: master check-file
 	@echo "[Hydra] Launching Master Hub..."
-	TARGET_FILE=$(FILE) docker-compose up --build master
+	TARGET_FILE=$(FILE) docker compose up --build master
 
 # Launch ONLY Workers (connects to Master via environment variable)
 # Usage: make worker-up CORES=4 MASTER_IP=100.x.y.z
 worker-up: check-cores
 	MASTER_IP=$(MASTER_IP) python3 gen_compose.py $(CORES)
 	@echo "[Hydra] Launching $(CORES) workers connecting to $(MASTER_IP)..."
-	MASTER_IP=$(MASTER_IP) docker-compose up --build $(shell grep -o "worker-[0-9]*" docker-compose.yaml | xargs) 
+	MASTER_IP=$(MASTER_IP) docker compose up --build $(shell grep -o "worker-[0-9]*" docker-compose.yaml | xargs) 
 clean:
 	rm -f master_bin
 	rm -rf go-master/proto/*.go
 	rm -f python-worker/*_pb2*
-	docker-compose down --rmi all
+	docker compose down --rmi all
