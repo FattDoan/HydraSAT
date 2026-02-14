@@ -3,8 +3,10 @@ import argparse
 import time
 import os
 import grpc
+import shutil
 import solver_pb2
 import solver_pb2_grpc
+from pathlib import Path
 from parser import parse_ganak_unweighted_count
 
 
@@ -12,7 +14,23 @@ from parser import parse_ganak_unweighted_count
 # decodes it into Python object request and hands to this function
 class SATWorker:
     def __init__(self, master_address, worker_id):
-        self.ganak_path = "/usr/local/bin/ganak"
+        # Check for Docker/System path
+        system_ganak = shutil.which("ganak") or "/usr/local/bin/ganak"
+        # Check for the project-relative path (for Uni VM / No-Root)
+        # Assumes worker.py is in /python-worker/worker.py
+        # This goes up one level to root, then down into src/external...
+        project_root = Path(__file__).parent.parent
+        repo_ganak = project_root / "src/external/ganak-linux-amd64/ganak"        
+
+        # Priority Logic
+        if os.path.exists(system_ganak) and os.access(system_ganak, os.X_OK):
+            self.ganak_path = system_ganak
+        elif repo_ganak.exists():
+            self.ganak_path = str(repo_ganak.absolute())
+        else:
+            # Final fallback to just 'ganak' and hope it's in the PATH
+            self.ganak_path = "ganak"
+
         self.master_address = master_address
         self.worker_id = worker_id
 

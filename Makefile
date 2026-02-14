@@ -1,19 +1,18 @@
 .PHONY: proto master up down clean
 
-# Default value if want one, or leave empty to force input
-CORES ?=
-FILE ?=
-# If use tailscale, set this to the given IP of the master machine
-MASTER_IP ?= master #Default to internal docker networking
-
+# --- Configuration ---
+CORES     ?= $(shell nproc)
+FILE      ?= 
+MASTER_IP ?= master
+# MASTER_ADDR combines IP and the gRPC port
+MASTER_ADDR = $(MASTER_IP):50051
 
 # Variables
 PYTHON_VENV = ./venv
-PIP = $(PYTHON_VENV)/bin/pip
-PYTHON = $(PYTHON_VENV)/bin/python
+PIP         = $(PYTHON_VENV)/bin/pip
+PYTHON      = $(PYTHON_VENV)/bin/python
 
-
-# Helper to check for CORES variable
+# --- Guards ---
 check-cores:
 ifeq ($(CORES),)
 	$(error Please specify CORES (~number of workers). Example: make up CORES=8)
@@ -21,14 +20,14 @@ endif
 
 check-file:
 ifeq ($(FILE),)
-	$(error Please specify CNF FILE in cnf_instances folder. Example: make up FILE=problem.cnf)
+	$(error Please specify cnf FILE path. Example: make up FILE=problem.cnf)
 endif
 
-# Setup VENV and Generate Protobufs
+x-ganak:
+	@chmod +x src/external/ganak-linux-amd64/ganak
+
+# --- Setup VENV and Generate Protobufs ---
 proto:
-	@echo "[Hydra] Ensuring venv exists..."
-	@test -d $(PYTHON_VENV) || (python3 -m venv $(PYTHON_VENV) && $(PIP) install grpcio-tools)
-	
 	@echo "[Hydra] Generating Python Protos..."
 	@$(PYTHON) -m grpc_tools.protoc -I./proto \
 		--python_out=./python-worker \
@@ -42,33 +41,53 @@ proto:
 		--go-grpc_out=go-master/proto --go-grpc_opt=paths=source_relative \
 		proto/solver.proto
 
-# Build Go Master locally (for quick debugging)
+
+pip:
+	@echo "[Hydra] Ensuring venv exists and install necessary dependencies..."
+	@test -d $(PYTHON_VENV) || python3 -m venv $(PYTHON_VENV)
+	# Install both the tools and the library itself
+	@$(PIP) install grpcio grpcio-tools protobuf
+
+
 master:
 	@echo "[Hydra] Building Go Master binary..."
 	@cd go-master && go build -o ../master_bin main.go
 
-# Docker Orchestration
-gen-yaml: check-cores
-	@echo "[Hydra] Generating config for $(CORES) cores..."
-	@python3 gen_compose.py $(CORES)
 
-# LOCAL ALL IN ONE: master + workers on same machine
-up: gen-yaml check-file master
-	@echo "[Hydra] Launching local swarm..."
-	TARGET_FILE=$(FILE) docker compose up --build --abort-on-container-exit
+# -- [ROOT] Docker Targets ---
+# [ROOT] Full swarm (Master + Worker Swarm)
+up: proto pip master check-file x-ganak 
+	@echo "[Hydra] Launching local swarm in Docker (Cores: $(CORES)) (File: $(FILE))..."
+	FILE=$(FILE) CORES=$(CORES) docker compose up --build
 
-# Launch ONLY the Master
+# [ROOT] MASTER ONLY 
 # Usage: make master-up FILE=problem.cnf
-master-up: master check-file
-	@echo "[Hydra] Launching Master Hub..."
+master-up: proto master check-file
+	@echo "[Hydra] Launching Master Hub in Docker..."
 	TARGET_FILE=$(FILE) docker compose up --build master
 
-# Launch ONLY Workers (connects to Master via environment variable)
-# Usage: make worker-up CORES=4 MASTER_IP=100.x.y.z
-worker-up: check-cores
-	MASTER_IP=$(MASTER_IP) python3 gen_compose.py $(CORES)
-	@echo "[Hydra] Launching $(CORES) workers connecting to $(MASTER_IP)..."
-	MASTER_IP=$(MASTER_IP) docker compose up --build $(shell grep -o "worker-[0-9]*" docker-compose.yaml | xargs) 
+# [ROOT] WORKERS ONLY 
+worker-up: proto pip x-ganak
+	@echo "[Hydra] Launching Worker Swarm in Docker (Target: $(MASTER_ADDR))..."
+	MASTER_ADDR=$(MASTER_ADDR) CORES=$(CORES) docker compose up --build --no-deps worker-swarm
+
+# --- [NON-ROOT] Bare Metal Targets ---
+noroot-worker-up: pip check-cores x-ganak
+	@chmod +x launch_workers.sh
+	@echo "[Hydra] Starting bare-metal workers (No-Root)..."
+	# If MASTER_IP is still "master", we switch it to "127.0.0.1" for local mode
+	$(eval ADDR := $(if $(filter master,$(MASTER_IP)),127.0.0.1,$(MASTER_IP)))
+	CORES=$(CORES) MASTER_ADDR=$(ADDR):50051 PYTHON_BIN=$(PYTHON) ./launch_workers.sh 
+
+
+# --- Cleanup ---
+down:
+	docker compose down
+
+noroot-down:
+	@echo "[Hydra] Killing local worker processes..."
+	@pkill -f "worker.py" || echo "[Hydra] No workers found."
+
 clean:
 	rm -f master_bin
 	rm -rf go-master/proto/*.go

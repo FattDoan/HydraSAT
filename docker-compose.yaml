@@ -5,54 +5,22 @@ services:
       dockerfile: go-master/Dockerfile.master
     ports:
       - "50051:50051"
-    command: ["/data/${TARGET_FILE}"]
     volumes:
-      - ./cnf_instances:/data
+      # Mount the whole root so we can access any file relative to it
+      - .:/app
+    environment:
+      - FILE=${FILE}
+    # We pass the FILE variable directly to the binary
+    command: ./master_bin /app/${FILE}
 
-  worker-0:
+  worker-swarm:
     build:
       context: .
       dockerfile: python-worker/Dockerfile.worker
-    cpuset: "0"
-    # Use environment variables for cleaner config
     environment:
-      - MASTER_ADDR=${MASTER_IP:-master}:50051
-      - WORKER_ID=worker-0
-    # Notice we don't strictly need the command args if we use env vars in Python
-    command: ["--master", "${MASTER_IP:-master}:50051", "--id", "worker-0"]
-
-  worker-1:
-    build:
-      context: .
-      dockerfile: python-worker/Dockerfile.worker
-    cpuset: "1"
-    # Use environment variables for cleaner config
-    environment:
-      - MASTER_ADDR=${MASTER_IP:-master}:50051
-      - WORKER_ID=worker-1
-    # Notice we don't strictly need the command args if we use env vars in Python
-    command: ["--master", "${MASTER_IP:-master}:50051", "--id", "worker-1"]
-
-  worker-2:
-    build:
-      context: .
-      dockerfile: python-worker/Dockerfile.worker
-    cpuset: "2"
-    # Use environment variables for cleaner config
-    environment:
-      - MASTER_ADDR=${MASTER_IP:-master}:50051
-      - WORKER_ID=worker-2
-    # Notice we don't strictly need the command args if we use env vars in Python
-    command: ["--master", "${MASTER_IP:-master}:50051", "--id", "worker-2"]
-
-  worker-3:
-    build:
-      context: .
-      dockerfile: python-worker/Dockerfile.worker
-    cpuset: "3"
-    # Use environment variables for cleaner config
-    environment:
-      - MASTER_ADDR=${MASTER_IP:-master}:50051
-      - WORKER_ID=worker-3
-    # Notice we don't strictly need the command args if we use env vars in Python
-    command: ["--master", "${MASTER_IP:-master}:50051", "--id", "worker-3"]
+      # Use MASTER_ADDR from Makefile, else default to 'master:50051'
+      - MASTER_ADDR=${MASTER_ADDR:-master:50051}
+      # Use CORES from Makefile, else default to 1
+      - CORES=${CORES:-1}
+    depends_on:
+      - master

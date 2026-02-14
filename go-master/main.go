@@ -143,7 +143,7 @@ func (s *masterServer) SubmitResult(ctx context.Context, req *pb.CountResponse) 
 func main() {
 	// Check if a file path was passed as an argument
 	if len(os.Args) < 2 {
-		log.Fatal("Error: No CNF file provided. Usage: ./master_bin /data/problem.cnf")
+		log.Fatal("Error: No CNF file provided. Usage: ./master_bin problem.cnf")
 	}
 	formulaPath := os.Args[1]
 
@@ -155,6 +155,9 @@ func main() {
 		fmt.Printf("Error parsing CNF file: %v\n", err)
 		return
 	}
+
+
+
 
 	// Initialize master server state
 	m := &masterServer{
@@ -231,6 +234,13 @@ type CNFData struct {
 }
 
 func parseCNF(path string) (*CNFData, error) {
+	if !strings.HasSuffix(path, ".cnf") {
+		return nil, fmt.Errorf("[Master]: File %s is not a .cnf file", path)
+	}
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+    	return nil, fmt.Errorf("[Master]: File %s does not exist!", path)
+	}
+	
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err

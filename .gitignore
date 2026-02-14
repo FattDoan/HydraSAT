@@ -21,6 +21,4 @@ pkg/
 .idea/
 .vscode/
 *.log
-
-# yaml
-docker-compose.yaml
+logs/

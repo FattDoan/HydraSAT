@@ -17,5 +17,4 @@ COPY --from=builder /app/master_bin .
 # Expose the gRPC port
 EXPOSE 50051
 
-# ENTRYPOINT helps append the filename at the end of docker run command
-ENTRYPOINT ["./master_bin"]
+CMD ["./master_bin"]
