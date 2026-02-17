@@ -89,7 +89,7 @@ noroot-worker-up: check-cores x-ganak
 	# If MASTER_IP contains a colon ":" (like ngrok 0.tcp.eu.ngrok.io:12345), use it as is.
 	# Otherwise, assume it's an IP/Host and append :50051
 	$(eval ADDR := $(call get_addr))
-	CORES=$(CORES) MASTER_ADDR=$(ADDR):50051 PYTHON_BIN=$(PYTHON) ./launch_workers.sh 
+	CORES=$(CORES) MASTER_ADDR=$(ADDR) PYTHON_BIN=$(PYTHON) ./launch_workers.sh 
 
 
 # --- Cleanup ---
