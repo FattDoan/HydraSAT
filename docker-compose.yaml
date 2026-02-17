@@ -21,5 +21,5 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      - MASTER_ADDR=${MASTER_ADDR:-master}:${PORT}
+      - MASTER_ADDR=${MASTER_ADDR:-master}
       - CORES=${CORES:-1}

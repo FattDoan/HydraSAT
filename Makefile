@@ -13,14 +13,11 @@ PIP         = $(PYTHON_VENV)/bin/pip
 PYTHON      = $(PYTHON_VENV)/bin/python
 
 # --- Resolve address for workers to connect to the master ---
-# If MASTER_IP is "master", return master:PORT
-# If it's "host.docker.internal", return host.docker.internal:PORT
-# If it has a colon already (ngrok 0.tcp.eu.ngrok.io:12345), use as-is.
-define get_addr
-$(if $(findstring :,$(MASTER_IP)),$(MASTER_IP),\
-$(if $(filter master,$(MASTER_IP)),master:$(PORT),\
-$(if $(filter host.docker.internal,$(MASTER_IP)),host.docker.internal:$(PORT),$(MASTER_IP):$(PORT))))
+define get_ip
+$(if $(filter master,$(MASTER_IP)),master,\
+$(if $(filter host.docker.internal,$(MASTER_IP)),host.docker.internal,$(MASTER_IP)))
 endef
+
 
 # --- Guards ---
 check-cores:
@@ -81,18 +78,16 @@ master-up: master check-file
 
 # [ROOT] WORKERS ONLY 
 worker-up: x-ganak
-	$(eval ADDR := $(call get_addr))
-	@echo "[Hydra] Launching Worker Swarm in Docker -> $(ADDR)..."
-	PORT=$(PORT) MASTER_ADDR=$(ADDR) CORES=$(CORES) docker compose up --build --no-deps worker-swarm
+	$(eval IP := $(call get_ip))
+	@echo "[Hydra] Launching Worker Swarm in Docker -> $(IP):$(PORT)..."
+	PORT=$(PORT) MASTER_ADDR=$(IP):$(PORT) CORES=$(CORES) docker compose up --build --no-deps worker-swarm
 
 # --- [NON-ROOT] Bare Metal Targets ---
 noroot-worker-up: check-cores x-ganak
 	@chmod +x launch_workers.sh
-	$(eval ADDR := $(call get_addr))
-	@# If still "master:PORT" but on bare metal, fix to localhost
-	$(eval FINAL_ADDR := $(subst master:,localhost:,$(ADDR)))
-	@echo "[Hydra] Starting bare-metal workers (No-Root) -> $(FINAL_ADDR)..."
-	PORT=$(PORT) CORES=$(CORES) MASTER_ADDR=$(FINAL_ADDR) PYTHON_BIN=$(PYTHON) ./launch_workers.sh 
+	$(eval IP := $(call get_IP))
+	@echo "[Hydra] Starting bare-metal workers (No-Root) -> $(IP):$(PORT)..."
+	PORT=$(PORT) CORES=$(CORES) MASTER_ADDR=$(IP):$(PORT) PYTHON_BIN=$(PYTHON) ./launch_workers.sh 
 
 
 # --- Cleanup ---
