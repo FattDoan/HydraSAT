@@ -4,13 +4,21 @@
 CORES     ?= $(shell nproc)
 FILE      ?= 
 MASTER_IP ?= master
-# MASTER_ADDR combines IP and the gRPC port
-MASTER_ADDR = $(MASTER_IP):50051
+
 
 # Variables
 PYTHON_VENV = ./venv
 PIP         = $(PYTHON_VENV)/bin/pip
 PYTHON      = $(PYTHON_VENV)/bin/python
+
+
+# If MASTER_IP is "master" (default), use 127.0.0.1:50051
+# If MASTER_IP contains a colon ":" (like ngrok 0.tcp.eu.ngrok.io:12345), use it as is.
+# Otherwise, assume it's an IP/Host and append :50051
+define get_addr
+$(if $(filter master,$(MASTER_IP)),$(1),\
+$(if $(findstring :,$(MASTER_IP)),$(MASTER_IP),$(MASTER_IP):50051))
+endef
 
 # --- Guards ---
 check-cores:
@@ -69,15 +77,18 @@ master-up: master check-file
 
 # [ROOT] WORKERS ONLY 
 worker-up: x-ganak
-	@echo "[Hydra] Launching Worker Swarm in Docker (Target: $(MASTER_ADDR))..."
-	MASTER_ADDR=$(MASTER_ADDR) CORES=$(CORES) docker compose up --build --no-deps worker-swarm
+	$(eval ADDR := $(call get_addr,master:50051))
+	@echo "[Hydra] Launching Worker Swarm in Docker (Target: $(ADDR))..."
+	MASTER_ADDR=$(ADDR) CORES=$(CORES) docker compose up --build --no-deps worker-swarm
 
 # --- [NON-ROOT] Bare Metal Targets ---
 noroot-worker-up: check-cores x-ganak
 	@chmod +x launch_workers.sh
 	@echo "[Hydra] Starting bare-metal workers (No-Root)..."
-	# If MASTER_IP is still "master", we switch it to "127.0.0.1" for local mode
-	$(eval ADDR := $(if $(filter master,$(MASTER_IP)),127.0.0.1,$(MASTER_IP)))
+	# If MASTER_IP is "master" (default), use 127.0.0.1:50051
+	# If MASTER_IP contains a colon ":" (like ngrok 0.tcp.eu.ngrok.io:12345), use it as is.
+	# Otherwise, assume it's an IP/Host and append :50051
+	$(eval ADDR := $(call get_addr,127.0.0.1:50051))
 	CORES=$(CORES) MASTER_ADDR=$(ADDR):50051 PYTHON_BIN=$(PYTHON) ./launch_workers.sh 
 
 
