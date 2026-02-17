@@ -4,7 +4,7 @@
 PORT 	  ?= 1208
 CORES     ?= $(shell nproc)
 FILE      ?= 
-MASTER_IP ?= master
+MASTER_IP ?= 127.0.0.1
 
 
 # Variables
