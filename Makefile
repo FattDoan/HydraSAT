@@ -4,7 +4,7 @@
 PORT 	  ?= 1208
 CORES     ?= $(shell nproc)
 FILE      ?= 
-MASTER_IP ?= 127.0.0.1
+MASTER_IP ?= master
 
 
 # Variables
@@ -85,7 +85,7 @@ worker-up: x-ganak
 # --- [NON-ROOT] Bare Metal Targets ---
 noroot-worker-up: check-cores x-ganak
 	@chmod +x launch_workers.sh
-	$(eval IP := $(call get_IP))
+	$(eval IP := $(call get_ip))
 	@echo "[Hydra] Starting bare-metal workers (No-Root) -> $(IP):$(PORT)..."
 	PORT=$(PORT) CORES=$(CORES) MASTER_ADDR=$(IP):$(PORT) PYTHON_BIN=$(PYTHON) ./launch_workers.sh 
 
