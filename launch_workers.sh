@@ -17,7 +17,7 @@ fi
 
 mkdir -p logs
 
-for ((i=0; i<$CORES_TO_USE; i++))
+for ((i=0; i<$CORES_TO_USE-1; i++))
 do
     CPU_ID=$i 
     WORKER_NAME="worker-$i"
@@ -27,4 +27,9 @@ do
     taskset -c $CPU_ID $PY_PATH $WORKER_FILE --master $MASTER_IP_ADDR --id $WORKER_NAME > "logs/worker_$i.log" 2>&1 &
 done
 
-wait
+# Start the LAST worker in the FOREGROUND to keep the container alive 
+# and stream logs to Docker STDOUT
+echo "  -> Starting worker-$(($CORES_TO_USE-1)) in foreground..."
+LAST_CORE=$(($CORES_TO_USE-1))
+taskset -c $LAST_CORE $PY_PATH $WORKER_FILE --master $MASTER_IP_ADDR --id "worker-$LAST_CORE" > "logs/worker_$LAST_CORE.log" 2>&1
+
