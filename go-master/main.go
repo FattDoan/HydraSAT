@@ -156,9 +156,6 @@ func main() {
 		return
 	}
 
-
-
-
 	// Initialize master server state
 	m := &masterServer{
 		taskQueue:  make(chan *pb.CountRequest, 1000),
@@ -179,8 +176,15 @@ func main() {
 		m.taskQueue <- m.makeRequest(c)
 	}
 
+	// Get the port number
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "50051" // default port if not set
+	}
+	port = ":" + port
+
 	// Start gRPC server in a separate goroutine
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		fmt.Printf("Failed to listen: %v\n", err)
 		return
@@ -188,7 +192,7 @@ func main() {
 	server := grpc.NewServer()
 	pb.RegisterSolverServiceServer(server, m)
 
-	fmt.Println("Master listening on :50051 via Tailscale/Local...")
+	fmt.Printf("Master listening on %s\n", port)
 	go func() {
 		if err := server.Serve(lis); err != nil {
 			fmt.Printf("Server failed: %v\n", err)
@@ -238,9 +242,9 @@ func parseCNF(path string) (*CNFData, error) {
 		return nil, fmt.Errorf("[Master]: File %s is not a .cnf file", path)
 	}
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-    	return nil, fmt.Errorf("[Master]: File %s does not exist!", path)
+		return nil, fmt.Errorf("[Master]: File %s does not exist!", path)
 	}
-	
+
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err

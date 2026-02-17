@@ -1,6 +1,7 @@
 .PHONY: proto master up down clean
 
 # --- Configuration ---
+PORT 	  ?= 1208
 CORES     ?= $(shell nproc)
 FILE      ?= 
 MASTER_IP ?= master
@@ -11,13 +12,14 @@ PYTHON_VENV = ./venv
 PIP         = $(PYTHON_VENV)/bin/pip
 PYTHON      = $(PYTHON_VENV)/bin/python
 
-
-# If MASTER_IP is "master" (default), master:50051
-# If MASTER_IP contains a colon ":" (like ngrok 0.tcp.eu.ngrok.io:12345), use it as is.
-# Otherwise, assume it's an IP/Host and append :50051
+# --- Resolve address for workers to connect to the master ---
+# If MASTER_IP is "master", return master:PORT
+# If it's "host.docker.internal", return host.docker.internal:PORT
+# If it has a colon already (ngrok 0.tcp.eu.ngrok.io:12345), use as-is.
 define get_addr
-$(if $(filter master,$(MASTER_IP)),master:50051,\
-$(if $(findstring :,$(MASTER_IP)),$(MASTER_IP),$(MASTER_IP):50051))
+$(if $(findstring :,$(MASTER_IP)),$(MASTER_IP),\
+$(if $(filter master,$(MASTER_IP)),master:$(PORT),\
+$(if $(filter host.docker.internal,$(MASTER_IP)),host.docker.internal:$(PORT),$(MASTER_IP):$(PORT))))
 endef
 
 # --- Guards ---
@@ -66,30 +68,31 @@ master:
 # -- [ROOT] Docker Targets ---
 # [ROOT] Full swarm (Master + Worker Swarm)
 up: master check-file x-ganak 
-	@echo "[Hydra] Launching local swarm in Docker (Cores: $(CORES)) (File: $(FILE))..."
-	FILE=$(FILE) CORES=$(CORES) docker compose up --build
+	@echo "[Hydra] Launching local swarm in Docker..."
+	@echo "Nb of cores: $(CORES) | File: $(FILE) | Port: $(PORT)"
+	PORT=$(PORT) FILE=$(FILE) CORES=$(CORES) docker compose up --build
 
 # [ROOT] MASTER ONLY 
 # Usage: make master-up FILE=problem.cnf
 master-up: master check-file
 	@echo "[Hydra] Launching Master Hub in Docker..."
-	TARGET_FILE=$(FILE) docker compose up --build master
+	@echo "File: $(FILE) | Port: $(PORT)"
+	PORT=$(PORT) ARGET_FILE=$(FILE) docker compose up --build master
 
 # [ROOT] WORKERS ONLY 
 worker-up: x-ganak
 	$(eval ADDR := $(call get_addr))
-	@echo "[Hydra] Launching Worker Swarm in Docker (Target: $(ADDR))..."
-	MASTER_ADDR=$(ADDR) CORES=$(CORES) docker compose up --build --no-deps worker-swarm
+	@echo "[Hydra] Launching Worker Swarm in Docker -> $(ADDR)..."
+	PORT=$(PORT) MASTER_ADDR=$(ADDR) CORES=$(CORES) docker compose up --build --no-deps worker-swarm
 
 # --- [NON-ROOT] Bare Metal Targets ---
 noroot-worker-up: check-cores x-ganak
 	@chmod +x launch_workers.sh
-	@echo "[Hydra] Starting bare-metal workers (No-Root)..."
-	# If MASTER_IP is "master" (default), use 127.0.0.1:50051
-	# If MASTER_IP contains a colon ":" (like ngrok 0.tcp.eu.ngrok.io:12345), use it as is.
-	# Otherwise, assume it's an IP/Host and append :50051
 	$(eval ADDR := $(call get_addr))
-	CORES=$(CORES) MASTER_ADDR=$(ADDR) PYTHON_BIN=$(PYTHON) ./launch_workers.sh 
+	@# If still "master:PORT" but on bare metal, fix to localhost
+	$(eval FINAL_ADDR := $(subst master:,localhost:,$(ADDR)))
+	@echo "[Hydra] Starting bare-metal workers (No-Root) -> $(FINAL_ADDR)..."
+	PORT=$(PORT) CORES=$(CORES) MASTER_ADDR=$(FINAL_ADDR) PYTHON_BIN=$(PYTHON) ./launch_workers.sh 
 
 
 # --- Cleanup ---

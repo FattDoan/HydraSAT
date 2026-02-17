@@ -4,12 +4,13 @@ services:
       context: .
       dockerfile: go-master/Dockerfile.master
     ports:
-      - "50051:50051"
+      - "${PORT}:${PORT}"
     volumes:
       # Mount the whole root so we can access any file relative to it
       - .:/app
-    environment:
+    environment: # to pass to go binary
       - FILE=${FILE}
+      - PORT=${PORT}
     # We pass the FILE variable directly to the binary
     command: ./master_bin /app/${FILE}
 
@@ -17,10 +18,8 @@ services:
     build:
       context: .
       dockerfile: python-worker/Dockerfile.worker
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
-      # Use MASTER_ADDR from Makefile, else default to 'master:50051'
-      - MASTER_ADDR=${MASTER_ADDR:-master:50051}
-      # Use CORES from Makefile, else default to 1
+      - MASTER_ADDR=${MASTER_ADDR:-master}:${PORT}
       - CORES=${CORES:-1}
-    depends_on:
-      - master
