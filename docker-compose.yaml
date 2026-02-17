@@ -4,13 +4,13 @@ services:
       context: .
       dockerfile: go-master/Dockerfile.master
     ports:
-      - "${PORT}:${PORT}"
+      - "${PORT:-50051}:${PORT:-50051}"
     volumes:
       # Mount the whole root so we can access any file relative to it
       - .:/app
     environment: # to pass to go binary
-      - FILE=${FILE}
-      - PORT=${PORT}
+      - FILE=${FILE:-unknown.cnf}
+      - PORT=${PORT:-50051}
     # We pass the FILE variable directly to the binary
     command: ./master_bin /app/${FILE}
 
