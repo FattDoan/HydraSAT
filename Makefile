@@ -12,11 +12,11 @@ PIP         = $(PYTHON_VENV)/bin/pip
 PYTHON      = $(PYTHON_VENV)/bin/python
 
 
-# If MASTER_IP is "master" (default), use 127.0.0.1:50051
+# If MASTER_IP is "master" (default), master:50051
 # If MASTER_IP contains a colon ":" (like ngrok 0.tcp.eu.ngrok.io:12345), use it as is.
 # Otherwise, assume it's an IP/Host and append :50051
 define get_addr
-$(if $(filter master,$(MASTER_IP)),127.0.0.1:50051,\
+$(if $(filter master,$(MASTER_IP)),master:50051,\
 $(if $(findstring :,$(MASTER_IP)),$(MASTER_IP),$(MASTER_IP):50051))
 endef
 
@@ -77,7 +77,7 @@ master-up: master check-file
 
 # [ROOT] WORKERS ONLY 
 worker-up: x-ganak
-	$(eval ADDR := $(call get_addr,master:50051))
+	$(eval ADDR := $(call get_addr))
 	@echo "[Hydra] Launching Worker Swarm in Docker (Target: $(ADDR))..."
 	MASTER_ADDR=$(ADDR) CORES=$(CORES) docker compose up --build --no-deps worker-swarm
 
@@ -88,7 +88,7 @@ noroot-worker-up: check-cores x-ganak
 	# If MASTER_IP is "master" (default), use 127.0.0.1:50051
 	# If MASTER_IP contains a colon ":" (like ngrok 0.tcp.eu.ngrok.io:12345), use it as is.
 	# Otherwise, assume it's an IP/Host and append :50051
-	$(eval ADDR := $(call get_addr,127.0.0.1:50051))
+	$(eval ADDR := $(call get_addr))
 	CORES=$(CORES) MASTER_ADDR=$(ADDR):50051 PYTHON_BIN=$(PYTHON) ./launch_workers.sh 
 
 
