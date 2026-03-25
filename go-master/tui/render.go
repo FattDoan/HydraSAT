@@ -41,7 +41,7 @@ func renderHeader(masterAddr string, width int) string {
 		Width(width)
 
 	timestamp := time.Now().Format("15:04:05")
-	title := fmt.Sprintf("🌊 HydraSAT Monitor - %s - Master: %s", timestamp, masterAddr)
+	title := fmt.Sprintf("HydraSAT Monitor - %s - Master: %s", timestamp, masterAddr)
 
 	return titleStyle.Render(title)
 }

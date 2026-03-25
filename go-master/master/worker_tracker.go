@@ -27,7 +27,7 @@ type workerState struct {
 
 // WorkerTracker is the master's in-memory view of the worker fleet.
 type WorkerTracker struct {
-	workers map[string]*workerState
+	workers map[string]*workerState // keyed by workerKey(hostname, workerID)
 	mu      sync.RWMutex
 }
 
@@ -37,13 +37,23 @@ func NewWorkerTracker() *WorkerTracker {
 	}
 }
 
+// workerKey builds a collision-free map key from the two identity fields.
+// Using hostname+workerID means two workers on different machines can share
+// the same workerID string (e.g. both named "worker-01") without overwriting
+// each other in the map.
+func workerKey(hostname, workerID string) string {
+	return hostname + "\x00" + workerID
+}
+
 // RegisterWorker upserts a worker entry. Static identity only — no CPU/RAM here
 // because those are only meaningful while ganak is actually running.
 func (wt *WorkerTracker) RegisterWorker(workerID, hostname string) {
+	key := workerKey(hostname, workerID)
+
 	wt.mu.Lock()
-	w, exists := wt.workers[workerID]
+	w, exists := wt.workers[key]
 	if !exists {
-		wt.workers[workerID] = &workerState{
+		wt.workers[key] = &workerState{
 			workerID:      workerID,
 			hostname:      hostname,
 			status:        "IDLE",
@@ -56,14 +66,13 @@ func (wt *WorkerTracker) RegisterWorker(workerID, hostname string) {
 	wt.mu.Unlock()
 
 	w.mu.Lock()
-	w.hostname = hostname
 	w.lastSeen = time.Now()
 	w.mu.Unlock()
 }
 
 // AssignTask marks a worker as BUSY and records what it's working on.
-func (wt *WorkerTracker) AssignTask(workerID string, taskID int64, cube []int32, timeoutSec float64) {
-	w := wt.get(workerID)
+func (wt *WorkerTracker) AssignTask(workerID, hostname string, taskID int64, cube []int32, timeoutSec float64) {
+	w := wt.get(hostname, workerID)
 	if w == nil {
 		return
 	}
@@ -78,8 +87,8 @@ func (wt *WorkerTracker) AssignTask(workerID string, taskID int64, cube []int32,
 }
 
 // SetIdle marks a worker as idle (no task assigned).
-func (wt *WorkerTracker) SetIdle(workerID string) {
-	w := wt.get(workerID)
+func (wt *WorkerTracker) SetIdle(workerID, hostname string) {
+	w := wt.get(hostname, workerID)
 	if w == nil {
 		return
 	}
@@ -92,8 +101,8 @@ func (wt *WorkerTracker) SetIdle(workerID string) {
 }
 
 // UpdateWorkerResult is called after SubmitResult to reflect success or timeout.
-func (wt *WorkerTracker) UpdateWorkerResult(workerID string, timedOut bool) {
-	w := wt.get(workerID)
+func (wt *WorkerTracker) UpdateWorkerResult(workerID, hostname string, timedOut bool) {
+	w := wt.get(hostname, workerID)
 	if w == nil {
 		return
 	}
@@ -112,8 +121,8 @@ func (wt *WorkerTracker) UpdateWorkerResult(workerID string, timedOut bool) {
 }
 
 // UpdateLiveStats receives a heartbeat from a worker's ReportStatus call.
-func (wt *WorkerTracker) UpdateLiveStats(workerID string, cpu, memMB, memPct float64) {
-	w := wt.get(workerID)
+func (wt *WorkerTracker) UpdateLiveStats(workerID, hostname string, cpu, memMB, memPct float64) {
+	w := wt.get(hostname, workerID)
 	if w == nil {
 		return
 	}
@@ -179,10 +188,10 @@ func (wt *WorkerTracker) TotalWorkerCount() int32 {
 	return int32(len(wt.workers))
 }
 
-// get is a helper that returns a worker by ID under a read lock.
-func (wt *WorkerTracker) get(workerID string) *workerState {
+// get returns a worker by composite key under a read lock.
+func (wt *WorkerTracker) get(hostname, workerID string) *workerState {
 	wt.mu.RLock()
-	w := wt.workers[workerID]
+	w := wt.workers[workerKey(hostname, workerID)]
 	wt.mu.RUnlock()
 	return w
 }

@@ -7,9 +7,18 @@ import (
 	pb "HydraSAT/proto"
 )
 
+// taskEntry is what the checkbook remembers about an in-flight task.
+// Storing hostname here lets SubmitResult and ReportStatus resolve the full
+// composite worker key (hostname + workerID) even though those RPCs only
+// carry workerID in the proto.
+type taskEntry struct {
+	cube     []int32
+	hostname string
+}
+
 type TaskManager struct {
 	taskQueue   chan *pb.TaskPayload
-	checkbook   map[int64][]int32 // taskID -> cube literals, for split-on-timeout
+	checkbook   map[int64]taskEntry // taskID -> (cube, hostname)
 	mu          sync.Mutex
 	nextID      int64
 	activeTasks int32
@@ -19,7 +28,7 @@ type TaskManager struct {
 func NewTaskManager(cnfData *CNFData) *TaskManager {
 	return &TaskManager{
 		taskQueue: make(chan *pb.TaskPayload, 10000),
-		checkbook: make(map[int64][]int32),
+		checkbook: make(map[int64]taskEntry),
 		cnfData:   cnfData,
 	}
 }
@@ -36,17 +45,40 @@ func (tm *TaskManager) EnqueueCubes(cubes [][]int32) {
 	}
 }
 
-// GetAndRemoveTask removes a task from the checkbook and returns its cube.
-// Returns (nil, false) if the task ID is unknown.
-func (tm *TaskManager) GetAndRemoveTask(taskID int64) ([]int32, bool) {
+// RecordAssignment stores the hostname for a task that has just been handed to
+// a worker. Called by the server after AssignTask so that SubmitResult and
+// ReportStatus (which only carry workerID, not hostname) can resolve the full
+// composite key.
+func (tm *TaskManager) RecordAssignment(taskID int64, hostname string) {
+	tm.mu.Lock()
+	if e, ok := tm.checkbook[taskID]; ok {
+		e.hostname = hostname
+		tm.checkbook[taskID] = e
+	}
+	tm.mu.Unlock()
+}
+
+// GetAndRemoveTask removes a task from the checkbook and returns its cube and
+// the hostname of the worker it was assigned to.
+// Returns ("", nil, false) if the task ID is unknown.
+func (tm *TaskManager) GetAndRemoveTask(taskID int64) (string, []int32, bool) {
 	tm.mu.Lock()
 	defer tm.mu.Unlock()
-	cube, exists := tm.checkbook[taskID]
+	entry, exists := tm.checkbook[taskID]
 	if exists {
 		delete(tm.checkbook, taskID)
 		atomic.AddInt32(&tm.activeTasks, -1)
 	}
-	return cube, exists
+	return entry.hostname, entry.cube, exists
+}
+
+// HostnameForTask returns the hostname stored for an in-flight task without
+// removing it. Used by ReportStatus to resolve the composite worker key.
+func (tm *TaskManager) HostnameForTask(taskID int64) (string, bool) {
+	tm.mu.Lock()
+	entry, ok := tm.checkbook[taskID]
+	tm.mu.Unlock()
+	return entry.hostname, ok
 }
 
 // IsEmpty reports whether all tasks have been completed.
@@ -66,11 +98,13 @@ func (tm *TaskManager) QueuedCount() int32 {
 
 // makePayload assigns an ID to a cube, registers it in the checkbook,
 // and wraps it in the protobuf TaskPayload the worker expects.
+// hostname is left empty here and filled in by RecordAssignment once the
+// server knows which worker received the task.
 func (tm *TaskManager) makePayload(cube []int32) *pb.TaskPayload {
 	id := atomic.AddInt64(&tm.nextID, 1)
 
 	tm.mu.Lock()
-	tm.checkbook[id] = cube
+	tm.checkbook[id] = taskEntry{cube: cube}
 	tm.mu.Unlock()
 
 	atomic.AddInt32(&tm.activeTasks, 1)
@@ -90,18 +124,6 @@ func (tm *TaskManager) makePayload(cube []int32) *pb.TaskPayload {
 // heuristic; replace with something smarter once cube generation is wired in.
 func SplitCube(cube []int32) [][]int32 {
 	var maxVar int32
-	for _, lit := range cube {
-		if v := lit; v < 0 {
-			v = -v
-		} else if v > maxVar {
-			maxVar = v
-		}
-		if abs := -lit; abs > 0 && abs > maxVar {
-			maxVar = abs
-		}
-	}
-	// Simpler absolute-value loop
-	maxVar = 0
 	for _, lit := range cube {
 		if lit < 0 {
 			lit = -lit

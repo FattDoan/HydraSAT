@@ -87,7 +87,11 @@ func (sc *StatsCollector) FetchStats() tea.Cmd {
 
 		workers := make(map[string]*WorkerInfo, len(resp.Workers))
 		for _, ws := range resp.Workers {
-			workers[ws.WorkerId] = &WorkerInfo{
+			// Use the same composite key as the master tracker so that two
+			// workers on different hosts with the same workerID string don't
+			// overwrite each other in this map.
+			key := ws.Hostname + "\x00" + ws.WorkerId
+			workers[key] = &WorkerInfo{
 				ID:             ws.WorkerId,
 				Hostname:       ws.Hostname,
 				Status:         ws.Status,
