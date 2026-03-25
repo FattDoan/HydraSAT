@@ -1,0 +1,9 @@
+
+{
+  "dynamicTimeout": true,
+  "initialTimeoutSec": 0,
+  "timeoutMultiplier": 2,
+  "readFolder": false,
+  "inputFolder": "./cnf_eval/",
+  "outputLog": "./eval_results/results.csv"
+}

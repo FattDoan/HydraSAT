@@ -58,6 +58,50 @@ func (*Empty) Descriptor() ([]byte, []int) {
 	return file_solver_proto_rawDescGZIP(), []int{0}
 }
 
+type TimeoutUpdate struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TimeoutSec    int32                  `protobuf:"varint,1,opt,name=timeout_sec,json=timeoutSec,proto3" json:"timeout_sec,omitempty"` // new timeout; 0 = no timeout
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TimeoutUpdate) Reset() {
+	*x = TimeoutUpdate{}
+	mi := &file_solver_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TimeoutUpdate) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TimeoutUpdate) ProtoMessage() {}
+
+func (x *TimeoutUpdate) ProtoReflect() protoreflect.Message {
+	mi := &file_solver_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TimeoutUpdate.ProtoReflect.Descriptor instead.
+func (*TimeoutUpdate) Descriptor() ([]byte, []int) {
+	return file_solver_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *TimeoutUpdate) GetTimeoutSec() int32 {
+	if x != nil {
+		return x.TimeoutSec
+	}
+	return 0
+}
+
 type WorkerIdentity struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WorkerId      string                 `protobuf:"bytes,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
@@ -68,7 +112,7 @@ type WorkerIdentity struct {
 
 func (x *WorkerIdentity) Reset() {
 	*x = WorkerIdentity{}
-	mi := &file_solver_proto_msgTypes[1]
+	mi := &file_solver_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -80,7 +124,7 @@ func (x *WorkerIdentity) String() string {
 func (*WorkerIdentity) ProtoMessage() {}
 
 func (x *WorkerIdentity) ProtoReflect() protoreflect.Message {
-	mi := &file_solver_proto_msgTypes[1]
+	mi := &file_solver_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -93,7 +137,7 @@ func (x *WorkerIdentity) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerIdentity.ProtoReflect.Descriptor instead.
 func (*WorkerIdentity) Descriptor() ([]byte, []int) {
-	return file_solver_proto_rawDescGZIP(), []int{1}
+	return file_solver_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *WorkerIdentity) GetWorkerId() string {
@@ -124,7 +168,7 @@ type TaskPayload struct {
 
 func (x *TaskPayload) Reset() {
 	*x = TaskPayload{}
-	mi := &file_solver_proto_msgTypes[2]
+	mi := &file_solver_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -136,7 +180,7 @@ func (x *TaskPayload) String() string {
 func (*TaskPayload) ProtoMessage() {}
 
 func (x *TaskPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_solver_proto_msgTypes[2]
+	mi := &file_solver_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -149,7 +193,7 @@ func (x *TaskPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TaskPayload.ProtoReflect.Descriptor instead.
 func (*TaskPayload) Descriptor() ([]byte, []int) {
-	return file_solver_proto_rawDescGZIP(), []int{2}
+	return file_solver_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *TaskPayload) GetTaskId() int64 {
@@ -207,7 +251,7 @@ type TaskResult struct {
 
 func (x *TaskResult) Reset() {
 	*x = TaskResult{}
-	mi := &file_solver_proto_msgTypes[3]
+	mi := &file_solver_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -219,7 +263,7 @@ func (x *TaskResult) String() string {
 func (*TaskResult) ProtoMessage() {}
 
 func (x *TaskResult) ProtoReflect() protoreflect.Message {
-	mi := &file_solver_proto_msgTypes[3]
+	mi := &file_solver_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -232,7 +276,7 @@ func (x *TaskResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TaskResult.ProtoReflect.Descriptor instead.
 func (*TaskResult) Descriptor() ([]byte, []int) {
-	return file_solver_proto_rawDescGZIP(), []int{3}
+	return file_solver_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *TaskResult) GetTaskId() int64 {
@@ -284,7 +328,7 @@ type WorkerStatus struct {
 
 func (x *WorkerStatus) Reset() {
 	*x = WorkerStatus{}
-	mi := &file_solver_proto_msgTypes[4]
+	mi := &file_solver_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -296,7 +340,7 @@ func (x *WorkerStatus) String() string {
 func (*WorkerStatus) ProtoMessage() {}
 
 func (x *WorkerStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_solver_proto_msgTypes[4]
+	mi := &file_solver_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -309,7 +353,7 @@ func (x *WorkerStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerStatus.ProtoReflect.Descriptor instead.
 func (*WorkerStatus) Descriptor() ([]byte, []int) {
-	return file_solver_proto_rawDescGZIP(), []int{4}
+	return file_solver_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *WorkerStatus) GetWorkerId() string {
@@ -364,13 +408,17 @@ type MasterStatsResponse struct {
 	TotalWorkers   int32                  `protobuf:"varint,6,opt,name=total_workers,json=totalWorkers,proto3" json:"total_workers,omitempty"`
 	BusyWorkers    int32                  `protobuf:"varint,7,opt,name=busy_workers,json=busyWorkers,proto3" json:"busy_workers,omitempty"`
 	Workers        []*WorkerStats         `protobuf:"bytes,8,rep,name=workers,proto3" json:"workers,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// Dynamic timeout stats (new)
+	AvgTaskSec        float64 `protobuf:"fixed64,9,opt,name=avg_task_sec,json=avgTaskSec,proto3" json:"avg_task_sec,omitempty"`                       // Running average of completed task durations
+	CurrentTimeoutSec float64 `protobuf:"fixed64,10,opt,name=current_timeout_sec,json=currentTimeoutSec,proto3" json:"current_timeout_sec,omitempty"` // Current timeout being issued (0 = no timeout)
+	DynamicTimeout    bool    `protobuf:"varint,11,opt,name=dynamic_timeout,json=dynamicTimeout,proto3" json:"dynamic_timeout,omitempty"`             // Whether dynamic timeout is enabled
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *MasterStatsResponse) Reset() {
 	*x = MasterStatsResponse{}
-	mi := &file_solver_proto_msgTypes[5]
+	mi := &file_solver_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -382,7 +430,7 @@ func (x *MasterStatsResponse) String() string {
 func (*MasterStatsResponse) ProtoMessage() {}
 
 func (x *MasterStatsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_solver_proto_msgTypes[5]
+	mi := &file_solver_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -395,7 +443,7 @@ func (x *MasterStatsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MasterStatsResponse.ProtoReflect.Descriptor instead.
 func (*MasterStatsResponse) Descriptor() ([]byte, []int) {
-	return file_solver_proto_rawDescGZIP(), []int{5}
+	return file_solver_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *MasterStatsResponse) GetActiveTasks() int32 {
@@ -454,28 +502,49 @@ func (x *MasterStatsResponse) GetWorkers() []*WorkerStats {
 	return nil
 }
 
+func (x *MasterStatsResponse) GetAvgTaskSec() float64 {
+	if x != nil {
+		return x.AvgTaskSec
+	}
+	return 0
+}
+
+func (x *MasterStatsResponse) GetCurrentTimeoutSec() float64 {
+	if x != nil {
+		return x.CurrentTimeoutSec
+	}
+	return 0
+}
+
+func (x *MasterStatsResponse) GetDynamicTimeout() bool {
+	if x != nil {
+		return x.DynamicTimeout
+	}
+	return false
+}
+
 type WorkerStats struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	WorkerId       string                 `protobuf:"bytes,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
 	Hostname       string                 `protobuf:"bytes,2,opt,name=hostname,proto3" json:"hostname,omitempty"`
-	Status         string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"` // IDLE, BUSY, TIMEOUT
+	Status         string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
 	CurrentTaskId  int64                  `protobuf:"varint,4,opt,name=current_task_id,json=currentTaskId,proto3" json:"current_task_id,omitempty"`
 	CurrentCube    []int32                `protobuf:"varint,5,rep,packed,name=current_cube,json=currentCube,proto3" json:"current_cube,omitempty"`
 	TasksCompleted int32                  `protobuf:"varint,6,opt,name=tasks_completed,json=tasksCompleted,proto3" json:"tasks_completed,omitempty"`
 	TasksFailed    int32                  `protobuf:"varint,7,opt,name=tasks_failed,json=tasksFailed,proto3" json:"tasks_failed,omitempty"`
 	LastSeenUnix   int64                  `protobuf:"varint,8,opt,name=last_seen_unix,json=lastSeenUnix,proto3" json:"last_seen_unix,omitempty"`
-	TaskElapsedSec float64                `protobuf:"fixed64,9,opt,name=task_elapsed_sec,json=taskElapsedSec,proto3" json:"task_elapsed_sec,omitempty"`  // Current elapsed time
-	TaskTimeout    float64                `protobuf:"fixed64,10,opt,name=task_timeout,json=taskTimeout,proto3" json:"task_timeout,omitempty"`            // To show how close we are to timing out
-	CpuUsage       float64                `protobuf:"fixed64,11,opt,name=cpu_usage,json=cpuUsage,proto3" json:"cpu_usage,omitempty"`                     // Live CPU %
-	MemoryUsageMb  float64                `protobuf:"fixed64,12,opt,name=memory_usage_mb,json=memoryUsageMb,proto3" json:"memory_usage_mb,omitempty"`    // Live RAM MB
-	MemoryUsagePct float64                `protobuf:"fixed64,13,opt,name=memory_usage_pct,json=memoryUsagePct,proto3" json:"memory_usage_pct,omitempty"` // Live RAM %
+	TaskElapsedSec float64                `protobuf:"fixed64,9,opt,name=task_elapsed_sec,json=taskElapsedSec,proto3" json:"task_elapsed_sec,omitempty"`
+	TaskTimeout    float64                `protobuf:"fixed64,10,opt,name=task_timeout,json=taskTimeout,proto3" json:"task_timeout,omitempty"`
+	CpuUsage       float64                `protobuf:"fixed64,11,opt,name=cpu_usage,json=cpuUsage,proto3" json:"cpu_usage,omitempty"`
+	MemoryUsageMb  float64                `protobuf:"fixed64,12,opt,name=memory_usage_mb,json=memoryUsageMb,proto3" json:"memory_usage_mb,omitempty"`
+	MemoryUsagePct float64                `protobuf:"fixed64,13,opt,name=memory_usage_pct,json=memoryUsagePct,proto3" json:"memory_usage_pct,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
 func (x *WorkerStats) Reset() {
 	*x = WorkerStats{}
-	mi := &file_solver_proto_msgTypes[6]
+	mi := &file_solver_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -487,7 +556,7 @@ func (x *WorkerStats) String() string {
 func (*WorkerStats) ProtoMessage() {}
 
 func (x *WorkerStats) ProtoReflect() protoreflect.Message {
-	mi := &file_solver_proto_msgTypes[6]
+	mi := &file_solver_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -500,7 +569,7 @@ func (x *WorkerStats) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerStats.ProtoReflect.Descriptor instead.
 func (*WorkerStats) Descriptor() ([]byte, []int) {
-	return file_solver_proto_rawDescGZIP(), []int{6}
+	return file_solver_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *WorkerStats) GetWorkerId() string {
@@ -599,7 +668,10 @@ var File_solver_proto protoreflect.FileDescriptor
 const file_solver_proto_rawDesc = "" +
 	"\n" +
 	"\fsolver.proto\"\a\n" +
-	"\x05Empty\"I\n" +
+	"\x05Empty\"0\n" +
+	"\rTimeoutUpdate\x12\x1f\n" +
+	"\vtimeout_sec\x18\x01 \x01(\x05R\n" +
+	"timeoutSec\"I\n" +
 	"\x0eWorkerIdentity\x12\x1b\n" +
 	"\tworker_id\x18\x01 \x01(\tR\bworkerId\x12\x1a\n" +
 	"\bhostname\x18\x02 \x01(\tR\bhostname\"\xc2\x01\n" +
@@ -626,7 +698,7 @@ const file_solver_proto_rawDesc = "" +
 	"\tcpu_usage\x18\x04 \x01(\x01R\bcpuUsage\x12\x1b\n" +
 	"\tmemory_mb\x18\x05 \x01(\x01R\bmemoryMb\x12\x1d\n" +
 	"\n" +
-	"memory_pct\x18\x06 \x01(\x01R\tmemoryPct\"\xb4\x02\n" +
+	"memory_pct\x18\x06 \x01(\x01R\tmemoryPct\"\xaf\x03\n" +
 	"\x13MasterStatsResponse\x12!\n" +
 	"\factive_tasks\x18\x01 \x01(\x05R\vactiveTasks\x12'\n" +
 	"\x0fcompleted_tasks\x18\x02 \x01(\x05R\x0ecompletedTasks\x12!\n" +
@@ -637,7 +709,12 @@ const file_solver_proto_rawDesc = "" +
 	"uptime_sec\x18\x05 \x01(\x01R\tuptimeSec\x12#\n" +
 	"\rtotal_workers\x18\x06 \x01(\x05R\ftotalWorkers\x12!\n" +
 	"\fbusy_workers\x18\a \x01(\x05R\vbusyWorkers\x12&\n" +
-	"\aworkers\x18\b \x03(\v2\f.WorkerStatsR\aworkers\"\xd7\x03\n" +
+	"\aworkers\x18\b \x03(\v2\f.WorkerStatsR\aworkers\x12 \n" +
+	"\favg_task_sec\x18\t \x01(\x01R\n" +
+	"avgTaskSec\x12.\n" +
+	"\x13current_timeout_sec\x18\n" +
+	" \x01(\x01R\x11currentTimeoutSec\x12'\n" +
+	"\x0fdynamic_timeout\x18\v \x01(\bR\x0edynamicTimeout\"\xd7\x03\n" +
 	"\vWorkerStats\x12\x1b\n" +
 	"\tworker_id\x18\x01 \x01(\tR\bworkerId\x12\x1a\n" +
 	"\bhostname\x18\x02 \x01(\tR\bhostname\x12\x16\n" +
@@ -652,12 +729,13 @@ const file_solver_proto_rawDesc = "" +
 	" \x01(\x01R\vtaskTimeout\x12\x1b\n" +
 	"\tcpu_usage\x18\v \x01(\x01R\bcpuUsage\x12&\n" +
 	"\x0fmemory_usage_mb\x18\f \x01(\x01R\rmemoryUsageMb\x12(\n" +
-	"\x10memory_usage_pct\x18\r \x01(\x01R\x0ememoryUsagePct2\xb5\x01\n" +
+	"\x10memory_usage_pct\x18\r \x01(\x01R\x0ememoryUsagePct2\xf3\x01\n" +
 	"\rSolverService\x12(\n" +
 	"\aGetTask\x12\x0f.WorkerIdentity\x1a\f.TaskPayload\x12#\n" +
 	"\fSubmitResult\x12\v.TaskResult\x1a\x06.Empty\x12%\n" +
 	"\fReportStatus\x12\r.WorkerStatus\x1a\x06.Empty\x12.\n" +
-	"\x0eGetMasterStats\x12\x06.Empty\x1a\x14.MasterStatsResponseB\x1bZ\x19HydraSAT/src/master/protob\x06proto3"
+	"\x0eGetMasterStats\x12\x06.Empty\x1a\x14.MasterStatsResponse\x12<\n" +
+	"\x17SubscribeTimeoutUpdates\x12\x0f.WorkerIdentity\x1a\x0e.TimeoutUpdate0\x01B\x1bZ\x19HydraSAT/src/master/protob\x06proto3"
 
 var (
 	file_solver_proto_rawDescOnce sync.Once
@@ -671,28 +749,31 @@ func file_solver_proto_rawDescGZIP() []byte {
 	return file_solver_proto_rawDescData
 }
 
-var file_solver_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_solver_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_solver_proto_goTypes = []any{
 	(*Empty)(nil),               // 0: Empty
-	(*WorkerIdentity)(nil),      // 1: WorkerIdentity
-	(*TaskPayload)(nil),         // 2: TaskPayload
-	(*TaskResult)(nil),          // 3: TaskResult
-	(*WorkerStatus)(nil),        // 4: WorkerStatus
-	(*MasterStatsResponse)(nil), // 5: MasterStatsResponse
-	(*WorkerStats)(nil),         // 6: WorkerStats
+	(*TimeoutUpdate)(nil),       // 1: TimeoutUpdate
+	(*WorkerIdentity)(nil),      // 2: WorkerIdentity
+	(*TaskPayload)(nil),         // 3: TaskPayload
+	(*TaskResult)(nil),          // 4: TaskResult
+	(*WorkerStatus)(nil),        // 5: WorkerStatus
+	(*MasterStatsResponse)(nil), // 6: MasterStatsResponse
+	(*WorkerStats)(nil),         // 7: WorkerStats
 }
 var file_solver_proto_depIdxs = []int32{
-	6, // 0: MasterStatsResponse.workers:type_name -> WorkerStats
-	1, // 1: SolverService.GetTask:input_type -> WorkerIdentity
-	3, // 2: SolverService.SubmitResult:input_type -> TaskResult
-	4, // 3: SolverService.ReportStatus:input_type -> WorkerStatus
+	7, // 0: MasterStatsResponse.workers:type_name -> WorkerStats
+	2, // 1: SolverService.GetTask:input_type -> WorkerIdentity
+	4, // 2: SolverService.SubmitResult:input_type -> TaskResult
+	5, // 3: SolverService.ReportStatus:input_type -> WorkerStatus
 	0, // 4: SolverService.GetMasterStats:input_type -> Empty
-	2, // 5: SolverService.GetTask:output_type -> TaskPayload
-	0, // 6: SolverService.SubmitResult:output_type -> Empty
-	0, // 7: SolverService.ReportStatus:output_type -> Empty
-	5, // 8: SolverService.GetMasterStats:output_type -> MasterStatsResponse
-	5, // [5:9] is the sub-list for method output_type
-	1, // [1:5] is the sub-list for method input_type
+	2, // 5: SolverService.SubscribeTimeoutUpdates:input_type -> WorkerIdentity
+	3, // 6: SolverService.GetTask:output_type -> TaskPayload
+	0, // 7: SolverService.SubmitResult:output_type -> Empty
+	0, // 8: SolverService.ReportStatus:output_type -> Empty
+	6, // 9: SolverService.GetMasterStats:output_type -> MasterStatsResponse
+	1, // 10: SolverService.SubscribeTimeoutUpdates:output_type -> TimeoutUpdate
+	6, // [6:11] is the sub-list for method output_type
+	1, // [1:6] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -709,7 +790,7 @@ func file_solver_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_solver_proto_rawDesc), len(file_solver_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

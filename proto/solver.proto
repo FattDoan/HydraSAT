@@ -20,11 +20,18 @@ service SolverService {
     // 4. TUI asks for the global state to draw the UI
     // We use Empty instead of a useless StatsRequest
     rpc GetMasterStats (Empty) returns (MasterStatsResponse);
+
+    // Worker subscribes once; master pushes TimeoutUpdate whenever the
+    // dynamic timeout changes meaningfully.
+    rpc SubscribeTimeoutUpdates (WorkerIdentity) returns (stream TimeoutUpdate);
 }
 
 // Reusable empty message
 message Empty {}
 
+message TimeoutUpdate {
+    int32 timeout_sec = 1;   // new timeout; 0 = no timeout
+}
 // --- WORKER MESSAGES ---
 
 message WorkerIdentity {
@@ -72,21 +79,25 @@ message MasterStatsResponse {
     int32 total_workers = 6;
     int32 busy_workers = 7;
     repeated WorkerStats workers = 8;
+
+    // Dynamic timeout stats (new)
+    double avg_task_sec = 9;          // Running average of completed task durations
+    double current_timeout_sec = 10;  // Current timeout being issued (0 = no timeout)
+    bool dynamic_timeout = 11;        // Whether dynamic timeout is enabled
 }
 
 message WorkerStats {
     string worker_id = 1;
     string hostname = 2;
-    string status = 3;             // IDLE, BUSY, TIMEOUT
+    string status = 3;
     int64 current_task_id = 4;
     repeated int32 current_cube = 5;
     int32 tasks_completed = 6;
     int32 tasks_failed = 7;
     int64 last_seen_unix = 8;
-    double task_elapsed_sec = 9;   // Current elapsed time
-    double task_timeout = 10;      // To show how close we are to timing out
-    double cpu_usage = 11;         // Live CPU %
-    double memory_usage_mb = 12;   // Live RAM MB
-    double memory_usage_pct = 13;  // Live RAM %
-    // Removed components, static progress, and redundant fields
+    double task_elapsed_sec = 9;
+    double task_timeout = 10;
+    double cpu_usage = 11;
+    double memory_usage_mb = 12;
+    double memory_usage_pct = 13;
 }

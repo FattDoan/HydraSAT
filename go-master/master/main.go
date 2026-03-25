@@ -4,58 +4,93 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
-func main() {
-	// Check if a file path was passed as an argument
-	if len(os.Args) < 2 {
-		log.Fatal("Error: No CNF file provided. Usage: ./master_bin problem.cnf")
-	}
-	formulaPath := os.Args[1]
+const heuristicConfigPath = "heuristic.json"
 
+func main() {
 	fmt.Printf("HydraSAT Master Server\n")
 	fmt.Printf("========================\n")
-	fmt.Printf("Loading CNF from: %s\n", formulaPath)
 
-	// Parse CNF file once
-	cnfData, err := ParseCNF(formulaPath)
+	cfg, err := LoadHeuristicConfig(heuristicConfigPath)
 	if err != nil {
-		log.Fatalf("Error parsing CNF file: %v", err)
+		log.Fatalf("Config error: %v", err)
 	}
 
-	fmt.Printf("CNF loaded: %d vars, %d clauses\n", cnfData.NumVars, cnfData.NumClauses)
-
-	// Initialize master server
-	server := NewMasterServer(cnfData)
-
-	// Generate initial cubes
-	// TODO: Replace with actual cube generation from Arjun
-	initialCubes := [][]int32{
-		{1, 2, 3}, {1, 2, -3}, {1, -2, 3}, {1, -2, -3},
-		{-1, 2, 3}, {-1, 2, -3}, {-1, -2, 3}, {-1, -2, -3},
+	logger, err := NewResultLogger(cfg.OutputLog)
+	if err != nil {
+		log.Fatalf("Logger error: %v", err)
 	}
 
-	fmt.Printf("Loading %d initial cubes into queue\n", len(initialCubes))
-	server.LoadInitialTasks(initialCubes)
+	var cnfFiles []string
 
-	// Get port from environment
+	if cfg.ReadFolder {
+		// Folder mode — FILE is ignored entirely
+		entries, err := os.ReadDir(cfg.InputFolder)
+		if err != nil {
+			log.Fatalf("Cannot read input folder %s: %v", cfg.InputFolder, err)
+		}
+		for _, e := range entries {
+			if !e.IsDir() && strings.HasSuffix(e.Name(), ".cnf") {
+				cnfFiles = append(cnfFiles, filepath.Join(cfg.InputFolder, e.Name()))
+			}
+		}
+		if len(cnfFiles) == 0 {
+			log.Fatalf("No .cnf files found in %s", cfg.InputFolder)
+		}
+		fmt.Printf("readFolder: found %d .cnf files in %s\n", len(cnfFiles), cfg.InputFolder)
+
+	} else {
+		// Single file mode — prefer CLI arg, fall back to FILE env var
+		formulaPath := ""
+		if len(os.Args) >= 2 {
+			formulaPath = os.Args[1]
+		} else if env := os.Getenv("FILE"); env != "" {
+			formulaPath = env
+		} else {
+			log.Fatal("No CNF file provided. Set FILE= or pass as argument, or set readFolder: true in heuristic.json")
+		}
+		cnfFiles = []string{formulaPath}
+	}
+
+	// ── Solve each file in turn ───────────────────────────────────────────
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "50051"
 	}
 
-	fmt.Printf("Starting gRPC server on port %s\n", port)
-	fmt.Printf("TUI monitor: Run './monitor' in another terminal\n")
-	fmt.Printf("Press Ctrl+C to stop\n\n")
+	for i, formulaPath := range cnfFiles {
+		fmt.Printf("\n[%d/%d] Loading CNF: %s\n", i+1, len(cnfFiles), formulaPath)
 
-	// Start server (blocks until done)
-	if err := server.Start(port); err != nil {
-		log.Fatalf("Server error: %v", err)
+		cnfData, err := ParseCNF(formulaPath)
+		if err != nil {
+			log.Fatalf("Error parsing CNF file %s: %v", formulaPath, err)
+		}
+		fmt.Printf("  %d vars, %d clauses\n", cnfData.NumVars, cnfData.NumClauses)
+
+		server := NewMasterServer(cnfData, formulaPath, cfg, logger)
+
+		// TODO: Replace with actual cube generation from Arjun
+		initialCubes := [][]int32{
+			{1, 2, 3}, {1, 2, -3}, {1, -2, 3}, {1, -2, -3},
+			{-1, 2, 3}, {-1, 2, -3}, {-1, -2, 3}, {-1, -2, -3},
+		}
+		fmt.Printf("  Loading %d initial cubes\n", len(initialCubes))
+		server.LoadInitialTasks(initialCubes)
+
+		fmt.Printf("  Starting gRPC server on port %s\n", port)
+		fmt.Printf("  TUI monitor: Run './tui_bin' in another terminal\n\n")
+
+		if err := server.Start(port); err != nil {
+			log.Fatalf("Server error: %v", err)
+		}
+
+		fmt.Println("\n=======================================")
+		fmt.Println("✓ SOLVING COMPLETE")
+		fmt.Printf("  File:        %s\n", formulaPath)
+		fmt.Printf("  Model Count: %s\n", server.GetTotalCount().Text(10))
+		fmt.Println("=======================================")
 	}
-
-	// Print final results
-	fmt.Println("\n=======================================")
-	fmt.Println("✓ SOLVING COMPLETE")
-	fmt.Printf("Final Model Count: %s\n", server.GetTotalCount().Text(10))
-	fmt.Println("=======================================")
 }

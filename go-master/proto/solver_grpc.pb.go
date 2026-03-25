@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SolverService_GetTask_FullMethodName        = "/SolverService/GetTask"
-	SolverService_SubmitResult_FullMethodName   = "/SolverService/SubmitResult"
-	SolverService_ReportStatus_FullMethodName   = "/SolverService/ReportStatus"
-	SolverService_GetMasterStats_FullMethodName = "/SolverService/GetMasterStats"
+	SolverService_GetTask_FullMethodName                 = "/SolverService/GetTask"
+	SolverService_SubmitResult_FullMethodName            = "/SolverService/SubmitResult"
+	SolverService_ReportStatus_FullMethodName            = "/SolverService/ReportStatus"
+	SolverService_GetMasterStats_FullMethodName          = "/SolverService/GetMasterStats"
+	SolverService_SubscribeTimeoutUpdates_FullMethodName = "/SolverService/SubscribeTimeoutUpdates"
 )
 
 // SolverServiceClient is the client API for SolverService service.
@@ -38,6 +39,9 @@ type SolverServiceClient interface {
 	// 4. TUI asks for the global state to draw the UI
 	// We use Empty instead of a useless StatsRequest
 	GetMasterStats(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*MasterStatsResponse, error)
+	// Worker subscribes once; master pushes TimeoutUpdate whenever the
+	// dynamic timeout changes meaningfully.
+	SubscribeTimeoutUpdates(ctx context.Context, in *WorkerIdentity, opts ...grpc.CallOption) (grpc.ServerStreamingClient[TimeoutUpdate], error)
 }
 
 type solverServiceClient struct {
@@ -88,6 +92,25 @@ func (c *solverServiceClient) GetMasterStats(ctx context.Context, in *Empty, opt
 	return out, nil
 }
 
+func (c *solverServiceClient) SubscribeTimeoutUpdates(ctx context.Context, in *WorkerIdentity, opts ...grpc.CallOption) (grpc.ServerStreamingClient[TimeoutUpdate], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &SolverService_ServiceDesc.Streams[0], SolverService_SubscribeTimeoutUpdates_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[WorkerIdentity, TimeoutUpdate]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type SolverService_SubscribeTimeoutUpdatesClient = grpc.ServerStreamingClient[TimeoutUpdate]
+
 // SolverServiceServer is the server API for SolverService service.
 // All implementations must embed UnimplementedSolverServiceServer
 // for forward compatibility.
@@ -101,6 +124,9 @@ type SolverServiceServer interface {
 	// 4. TUI asks for the global state to draw the UI
 	// We use Empty instead of a useless StatsRequest
 	GetMasterStats(context.Context, *Empty) (*MasterStatsResponse, error)
+	// Worker subscribes once; master pushes TimeoutUpdate whenever the
+	// dynamic timeout changes meaningfully.
+	SubscribeTimeoutUpdates(*WorkerIdentity, grpc.ServerStreamingServer[TimeoutUpdate]) error
 	mustEmbedUnimplementedSolverServiceServer()
 }
 
@@ -122,6 +148,9 @@ func (UnimplementedSolverServiceServer) ReportStatus(context.Context, *WorkerSta
 }
 func (UnimplementedSolverServiceServer) GetMasterStats(context.Context, *Empty) (*MasterStatsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetMasterStats not implemented")
+}
+func (UnimplementedSolverServiceServer) SubscribeTimeoutUpdates(*WorkerIdentity, grpc.ServerStreamingServer[TimeoutUpdate]) error {
+	return status.Error(codes.Unimplemented, "method SubscribeTimeoutUpdates not implemented")
 }
 func (UnimplementedSolverServiceServer) mustEmbedUnimplementedSolverServiceServer() {}
 func (UnimplementedSolverServiceServer) testEmbeddedByValue()                       {}
@@ -216,6 +245,17 @@ func _SolverService_GetMasterStats_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SolverService_SubscribeTimeoutUpdates_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WorkerIdentity)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SolverServiceServer).SubscribeTimeoutUpdates(m, &grpc.GenericServerStream[WorkerIdentity, TimeoutUpdate]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type SolverService_SubscribeTimeoutUpdatesServer = grpc.ServerStreamingServer[TimeoutUpdate]
+
 // SolverService_ServiceDesc is the grpc.ServiceDesc for SolverService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -240,6 +280,12 @@ var SolverService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _SolverService_GetMasterStats_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "SubscribeTimeoutUpdates",
+			Handler:       _SolverService_SubscribeTimeoutUpdates_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "solver.proto",
 }

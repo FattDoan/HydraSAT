@@ -55,6 +55,11 @@ class SolverServiceStub(object):
                 request_serializer=solver__pb2.Empty.SerializeToString,
                 response_deserializer=solver__pb2.MasterStatsResponse.FromString,
                 _registered_method=True)
+        self.SubscribeTimeoutUpdates = channel.unary_stream(
+                '/SolverService/SubscribeTimeoutUpdates',
+                request_serializer=solver__pb2.WorkerIdentity.SerializeToString,
+                response_deserializer=solver__pb2.TimeoutUpdate.FromString,
+                _registered_method=True)
 
 
 class SolverServiceServicer(object):
@@ -92,6 +97,14 @@ class SolverServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SubscribeTimeoutUpdates(self, request, context):
+        """Worker subscribes once; master pushes TimeoutUpdate whenever the
+        dynamic timeout changes meaningfully.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_SolverServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -114,6 +127,11 @@ def add_SolverServiceServicer_to_server(servicer, server):
                     servicer.GetMasterStats,
                     request_deserializer=solver__pb2.Empty.FromString,
                     response_serializer=solver__pb2.MasterStatsResponse.SerializeToString,
+            ),
+            'SubscribeTimeoutUpdates': grpc.unary_stream_rpc_method_handler(
+                    servicer.SubscribeTimeoutUpdates,
+                    request_deserializer=solver__pb2.WorkerIdentity.FromString,
+                    response_serializer=solver__pb2.TimeoutUpdate.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -225,6 +243,33 @@ class SolverService(object):
             '/SolverService/GetMasterStats',
             solver__pb2.Empty.SerializeToString,
             solver__pb2.MasterStatsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def SubscribeTimeoutUpdates(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/SolverService/SubscribeTimeoutUpdates',
+            solver__pb2.WorkerIdentity.SerializeToString,
+            solver__pb2.TimeoutUpdate.FromString,
             options,
             channel_credentials,
             insecure,

@@ -11,7 +11,6 @@ import (
 	pb "HydraSAT/proto"
 )
 
-// WorkerInfo is the TUI-local representation of a single worker's state.
 type WorkerInfo struct {
 	ID             string
 	Hostname       string
@@ -28,22 +27,23 @@ type WorkerInfo struct {
 	TaskTimeout    float64
 }
 
-// SystemStats is a snapshot of the master's global state for one render frame.
 type SystemStats struct {
-	Workers        map[string]*WorkerInfo
-	ActiveTasks    int32
-	CompletedTasks int32
-	QueuedTasks    int32
-	TotalCount     string
-	Uptime         float64
-	TotalWorkers   int32
-	BusyWorkers    int32
+	Workers           map[string]*WorkerInfo
+	ActiveTasks       int32
+	CompletedTasks    int32
+	QueuedTasks       int32
+	TotalCount        string
+	Uptime            float64
+	TotalWorkers      int32
+	BusyWorkers       int32
+	AvgTaskSec        float64 // running average of completed task durations
+	CurrentTimeoutSec float64 // current dynamic timeout (0 = no timeout)
+	DynamicTimeout    bool    // whether dynamic timeout is on
 }
 
 type statsMsg SystemStats
 type errMsg error
 
-// StatsCollector polls the master via gRPC and stores the latest snapshot.
 type StatsCollector struct {
 	client     pb.SolverServiceClient
 	stats      SystemStats
@@ -58,7 +58,6 @@ func NewStatsCollector(client pb.SolverServiceClient) *StatsCollector {
 	}
 }
 
-// FetchStats returns a Bubble Tea command that calls GetMasterStats once.
 func (sc *StatsCollector) FetchStats() tea.Cmd {
 	return func() tea.Msg {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -71,7 +70,6 @@ func (sc *StatsCollector) FetchStats() tea.Cmd {
 			count := sc.errorCount
 			sc.mu.Unlock()
 
-			// Surface last-known stats for a couple of cycles before giving up.
 			if count < 3 {
 				sc.mu.RLock()
 				last := sc.stats
@@ -87,9 +85,6 @@ func (sc *StatsCollector) FetchStats() tea.Cmd {
 
 		workers := make(map[string]*WorkerInfo, len(resp.Workers))
 		for _, ws := range resp.Workers {
-			// Use the same composite key as the master tracker so that two
-			// workers on different hosts with the same workerID string don't
-			// overwrite each other in this map.
 			key := ws.Hostname + "\x00" + ws.WorkerId
 			workers[key] = &WorkerInfo{
 				ID:             ws.WorkerId,
@@ -104,19 +99,22 @@ func (sc *StatsCollector) FetchStats() tea.Cmd {
 				MemoryUsagePct: ws.MemoryUsagePct,
 				LastSeen:       time.Unix(ws.LastSeenUnix, 0),
 				TaskElapsedSec: ws.TaskElapsedSec,
-				TaskTimeout:    ws.TaskTimeout,
+				TaskTimeout:    resp.CurrentTimeoutSec,
 			}
 		}
 
 		return statsMsg(SystemStats{
-			Workers:        workers,
-			ActiveTasks:    resp.ActiveTasks,
-			CompletedTasks: resp.CompletedTasks,
-			QueuedTasks:    resp.QueuedTasks,
-			TotalCount:     resp.TotalCount,
-			Uptime:         resp.UptimeSec,
-			TotalWorkers:   resp.TotalWorkers,
-			BusyWorkers:    resp.BusyWorkers,
+			Workers:           workers,
+			ActiveTasks:       resp.ActiveTasks,
+			CompletedTasks:    resp.CompletedTasks,
+			QueuedTasks:       resp.QueuedTasks,
+			TotalCount:        resp.TotalCount,
+			Uptime:            resp.UptimeSec,
+			TotalWorkers:      resp.TotalWorkers,
+			BusyWorkers:       resp.BusyWorkers,
+			AvgTaskSec:        resp.AvgTaskSec,
+			CurrentTimeoutSec: resp.CurrentTimeoutSec,
+			DynamicTimeout:    resp.DynamicTimeout,
 		})
 	}
 }

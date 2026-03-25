@@ -27,10 +27,20 @@ ifeq ($(CORES),)
 	$(error Please specify CORES (~number of workers). Example: make up CORES=8)
 endif
 
+# Detects readFolder from heuristic.json (requires jq, falls back gracefully)
+READ_FOLDER := $(shell jq -r '.readFolder // false' heuristic.json 2>/dev/null)
+
 check-file:
-ifeq ($(FILE),)
-	$(error Please specify cnf FILE path. Example: make up FILE=problem.cnf)
+ifeq ($(READ_FOLDER),true)
+	@echo "[Hydra] readFolder mode — FILE not required"
+else ifeq ($(FILE),)
+	$(error FILE is required in single-file mode. Usage: make up FILE=problem.cnf  OR set readFolder: true in heuristic.json)
 endif
+
+# check-heuristic warns if the config is missing entirely
+check-heuristic:
+	@test -f heuristic.json || echo "[Hydra] WARNING: heuristic.json not found — using defaults"
+
 
 x-ganak:
 	@chmod +x src/external/ganak-linux-amd64/ganak
@@ -83,13 +93,13 @@ build: proto master tui
 # --- Docker Targets ---
 
 # [ROOT] Full swarm (Master + Worker Swarm)
-up: master check-file check-cores x-ganak 
+up: master check-file check-cores x-ganak check-heuristic 
 	@echo "[Hydra] Launching local swarm in Docker..."
 	@echo "Cores: $(CORES) | File: $(FILE) | Port: $(PORT)"
 	PORT=$(PORT) FILE=$(FILE) CORES=$(CORES) docker compose up --build
 
 # [ROOT] MASTER ONLY 
-master-up: master check-file
+master-up: master check-file check-heuristic
 	@echo "[Hydra] Launching Master Hub in Docker..."
 	@echo "File: $(FILE) | Port: $(PORT)"
 	PORT=$(PORT) TARGET_FILE=$(FILE) docker compose up --build master
@@ -103,7 +113,7 @@ worker-up: check-cores x-ganak
 # --- [NON-ROOT] Bare Metal Targets ---
 
 # Run Master (bare metal)
-run-master: master check-file
+run-master: master check-file check-heuristic
 	@echo "[Hydra] Starting Master on port $(PORT)..."
 	PORT=$(PORT) $(MASTER_BIN) $(FILE)
 
