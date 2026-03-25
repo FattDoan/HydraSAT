@@ -3,32 +3,90 @@ syntax = "proto3";
 option go_package = "HydraSAT/src/master/proto";
 
 service SolverService {
-    // Worker tell the Master its ID
-    // Master then sends CountRequest to the worker 
-    rpc GetTask (RegisterRequest) returns (CountRequest);
+    // === WORKER <-> MASTER RPCs ===
+    
+    // 1. Worker asks for a task
+    rpc GetTask (WorkerIdentity) returns (TaskPayload);
+    
+    // 2. Worker submits the final count/timeout
+    rpc SubmitResult (TaskResult) returns (Empty);
+    
+    // 3. Worker streams its live CPU/RAM while ganak is running
+    rpc ReportStatus (WorkerStatus) returns (Empty);
 
-    // When the worker finish solving 
-    // it sends the result back to the Master using this rpc
-    rpc SubmitResult (CountResponse) returns (Empty);
-}
-message RegisterRequest {
-    string worker_id = 1; // ID of the worker
+
+    // === TUI <-> MASTER RPCs ===
+    
+    // 4. TUI asks for the global state to draw the UI
+    // We use Empty instead of a useless StatsRequest
+    rpc GetMasterStats (Empty) returns (MasterStatsResponse);
 }
 
+// Reusable empty message
 message Empty {}
-message CountRequest {
-    int64 task_id = 1; // unique ID for the counting task
-    int32 num_vars = 2; // number of variables in the CNF
-    int32 num_clauses = 3; // number of clauses in the CNF
-    string formula_body = 4; // raw DIMACS body of the CNF (without the header)
-    repeated int32 literals = 5; // the cube
-    int32 timeout_sec = 6;  // timeout in seconds for the solver to find a solution
+
+// --- WORKER MESSAGES ---
+
+message WorkerIdentity {
+    string worker_id = 1;
+    string hostname = 2;
+    // Removed static CPU/RAM from here. 
+    // We only care about live stats while it's working.
 }
 
-message CountResponse {
-    string count = 1; // the number of solutions as a string to handle large numbers
-    double duration_sec = 2; // time taken to solve in seconds
-    bool timed_out = 3; // indicates if the solver timed out
-    int64 task_id = 4; // the ID of the task (for tracking purposes)
-    string worker_id = 5; // the ID of the worker that processed this task
+message TaskPayload { // Formerly CountRequest
+    int64 task_id = 1;
+    int32 num_vars = 2;
+    int32 num_clauses = 3;
+    string formula_body = 4;
+    repeated int32 literals = 5;
+    int32 timeout_sec = 6;
+}
+
+message TaskResult { // Formerly CountResponse
+    int64 task_id = 1;
+    string worker_id = 2;
+    string count = 3;
+    double duration_sec = 4;
+    bool timed_out = 5;
+}
+
+message WorkerStatus { // Formerly ProgressUpdate
+    string worker_id = 1;
+    int64 task_id = 2;
+    double elapsed_time = 3;   // How long ganak has been running
+    double cpu_usage = 4;      // Live CPU % of ganak
+    double memory_mb = 5;      // Live RAM in MB
+    double memory_pct = 6;     // Live RAM %
+    // Removed all component tracking and progress percentages
+}
+
+// --- TUI MESSAGES ---
+
+message MasterStatsResponse {
+    int32 active_tasks = 1;
+    int32 completed_tasks = 2;
+    int32 queued_tasks = 3;
+    string total_count = 4;
+    double uptime_sec = 5;
+    int32 total_workers = 6;
+    int32 busy_workers = 7;
+    repeated WorkerStats workers = 8;
+}
+
+message WorkerStats {
+    string worker_id = 1;
+    string hostname = 2;
+    string status = 3;             // IDLE, BUSY, TIMEOUT
+    int64 current_task_id = 4;
+    repeated int32 current_cube = 5;
+    int32 tasks_completed = 6;
+    int32 tasks_failed = 7;
+    int64 last_seen_unix = 8;
+    double task_elapsed_sec = 9;   // Current elapsed time
+    double task_timeout = 10;      // To show how close we are to timing out
+    double cpu_usage = 11;         // Live CPU %
+    double memory_usage_mb = 12;   // Live RAM MB
+    double memory_usage_pct = 13;  // Live RAM %
+    // Removed components, static progress, and redundant fields
 }

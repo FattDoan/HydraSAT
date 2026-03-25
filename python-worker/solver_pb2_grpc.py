@@ -26,7 +26,8 @@ if _version_not_supported:
 
 
 class SolverServiceStub(object):
-    """Missing associated documentation comment in .proto file."""
+    """=== WORKER <-> MASTER RPCs ===
+    """
 
     def __init__(self, channel):
         """Constructor.
@@ -36,30 +37,56 @@ class SolverServiceStub(object):
         """
         self.GetTask = channel.unary_unary(
                 '/SolverService/GetTask',
-                request_serializer=solver__pb2.RegisterRequest.SerializeToString,
-                response_deserializer=solver__pb2.CountRequest.FromString,
+                request_serializer=solver__pb2.WorkerIdentity.SerializeToString,
+                response_deserializer=solver__pb2.TaskPayload.FromString,
                 _registered_method=True)
         self.SubmitResult = channel.unary_unary(
                 '/SolverService/SubmitResult',
-                request_serializer=solver__pb2.CountResponse.SerializeToString,
+                request_serializer=solver__pb2.TaskResult.SerializeToString,
                 response_deserializer=solver__pb2.Empty.FromString,
+                _registered_method=True)
+        self.ReportStatus = channel.unary_unary(
+                '/SolverService/ReportStatus',
+                request_serializer=solver__pb2.WorkerStatus.SerializeToString,
+                response_deserializer=solver__pb2.Empty.FromString,
+                _registered_method=True)
+        self.GetMasterStats = channel.unary_unary(
+                '/SolverService/GetMasterStats',
+                request_serializer=solver__pb2.Empty.SerializeToString,
+                response_deserializer=solver__pb2.MasterStatsResponse.FromString,
                 _registered_method=True)
 
 
 class SolverServiceServicer(object):
-    """Missing associated documentation comment in .proto file."""
+    """=== WORKER <-> MASTER RPCs ===
+    """
 
     def GetTask(self, request, context):
-        """Worker tell the Master its ID
-        Master then sends CountRequest to the worker 
+        """1. Worker asks for a task
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def SubmitResult(self, request, context):
-        """When the worker finish solving 
-        it sends the result back to the Master using this rpc
+        """2. Worker submits the final count/timeout
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReportStatus(self, request, context):
+        """3. Worker streams its live CPU/RAM while ganak is running
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetMasterStats(self, request, context):
+        """=== TUI <-> MASTER RPCs ===
+
+        4. TUI asks for the global state to draw the UI
+        We use Empty instead of a useless StatsRequest
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -70,13 +97,23 @@ def add_SolverServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GetTask': grpc.unary_unary_rpc_method_handler(
                     servicer.GetTask,
-                    request_deserializer=solver__pb2.RegisterRequest.FromString,
-                    response_serializer=solver__pb2.CountRequest.SerializeToString,
+                    request_deserializer=solver__pb2.WorkerIdentity.FromString,
+                    response_serializer=solver__pb2.TaskPayload.SerializeToString,
             ),
             'SubmitResult': grpc.unary_unary_rpc_method_handler(
                     servicer.SubmitResult,
-                    request_deserializer=solver__pb2.CountResponse.FromString,
+                    request_deserializer=solver__pb2.TaskResult.FromString,
                     response_serializer=solver__pb2.Empty.SerializeToString,
+            ),
+            'ReportStatus': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReportStatus,
+                    request_deserializer=solver__pb2.WorkerStatus.FromString,
+                    response_serializer=solver__pb2.Empty.SerializeToString,
+            ),
+            'GetMasterStats': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMasterStats,
+                    request_deserializer=solver__pb2.Empty.FromString,
+                    response_serializer=solver__pb2.MasterStatsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -87,7 +124,8 @@ def add_SolverServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class SolverService(object):
-    """Missing associated documentation comment in .proto file."""
+    """=== WORKER <-> MASTER RPCs ===
+    """
 
     @staticmethod
     def GetTask(request,
@@ -104,8 +142,8 @@ class SolverService(object):
             request,
             target,
             '/SolverService/GetTask',
-            solver__pb2.RegisterRequest.SerializeToString,
-            solver__pb2.CountRequest.FromString,
+            solver__pb2.WorkerIdentity.SerializeToString,
+            solver__pb2.TaskPayload.FromString,
             options,
             channel_credentials,
             insecure,
@@ -131,8 +169,62 @@ class SolverService(object):
             request,
             target,
             '/SolverService/SubmitResult',
-            solver__pb2.CountResponse.SerializeToString,
+            solver__pb2.TaskResult.SerializeToString,
             solver__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReportStatus(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/SolverService/ReportStatus',
+            solver__pb2.WorkerStatus.SerializeToString,
+            solver__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetMasterStats(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/SolverService/GetMasterStats',
+            solver__pb2.Empty.SerializeToString,
+            solver__pb2.MasterStatsResponse.FromString,
             options,
             channel_credentials,
             insecure,

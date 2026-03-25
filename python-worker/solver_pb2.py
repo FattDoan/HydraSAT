@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0csolver.proto\"$\n\x0fRegisterRequest\x12\x11\n\tworker_id\x18\x01 \x01(\t\"\x07\n\x05\x45mpty\"\x83\x01\n\x0c\x43ountRequest\x12\x0f\n\x07task_id\x18\x01 \x01(\x03\x12\x10\n\x08num_vars\x18\x02 \x01(\x05\x12\x13\n\x0bnum_clauses\x18\x03 \x01(\x05\x12\x14\n\x0c\x66ormula_body\x18\x04 \x01(\t\x12\x10\n\x08literals\x18\x05 \x03(\x05\x12\x13\n\x0btimeout_sec\x18\x06 \x01(\x05\"k\n\rCountResponse\x12\r\n\x05\x63ount\x18\x01 \x01(\t\x12\x14\n\x0c\x64uration_sec\x18\x02 \x01(\x01\x12\x11\n\ttimed_out\x18\x03 \x01(\x08\x12\x0f\n\x07task_id\x18\x04 \x01(\x03\x12\x11\n\tworker_id\x18\x05 \x01(\t2c\n\rSolverService\x12*\n\x07GetTask\x12\x10.RegisterRequest\x1a\r.CountRequest\x12&\n\x0cSubmitResult\x12\x0e.CountResponse\x1a\x06.EmptyB\x1bZ\x19HydraSAT/src/master/protob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0csolver.proto\"\x07\n\x05\x45mpty\"5\n\x0eWorkerIdentity\x12\x11\n\tworker_id\x18\x01 \x01(\t\x12\x10\n\x08hostname\x18\x02 \x01(\t\"\x82\x01\n\x0bTaskPayload\x12\x0f\n\x07task_id\x18\x01 \x01(\x03\x12\x10\n\x08num_vars\x18\x02 \x01(\x05\x12\x13\n\x0bnum_clauses\x18\x03 \x01(\x05\x12\x14\n\x0c\x66ormula_body\x18\x04 \x01(\t\x12\x10\n\x08literals\x18\x05 \x03(\x05\x12\x13\n\x0btimeout_sec\x18\x06 \x01(\x05\"h\n\nTaskResult\x12\x0f\n\x07task_id\x18\x01 \x01(\x03\x12\x11\n\tworker_id\x18\x02 \x01(\t\x12\r\n\x05\x63ount\x18\x03 \x01(\t\x12\x14\n\x0c\x64uration_sec\x18\x04 \x01(\x01\x12\x11\n\ttimed_out\x18\x05 \x01(\x08\"\x82\x01\n\x0cWorkerStatus\x12\x11\n\tworker_id\x18\x01 \x01(\t\x12\x0f\n\x07task_id\x18\x02 \x01(\x03\x12\x14\n\x0c\x65lapsed_time\x18\x03 \x01(\x01\x12\x11\n\tcpu_usage\x18\x04 \x01(\x01\x12\x11\n\tmemory_mb\x18\x05 \x01(\x01\x12\x12\n\nmemory_pct\x18\x06 \x01(\x01\"\xcf\x01\n\x13MasterStatsResponse\x12\x14\n\x0c\x61\x63tive_tasks\x18\x01 \x01(\x05\x12\x17\n\x0f\x63ompleted_tasks\x18\x02 \x01(\x05\x12\x14\n\x0cqueued_tasks\x18\x03 \x01(\x05\x12\x13\n\x0btotal_count\x18\x04 \x01(\t\x12\x12\n\nuptime_sec\x18\x05 \x01(\x01\x12\x15\n\rtotal_workers\x18\x06 \x01(\x05\x12\x14\n\x0c\x62usy_workers\x18\x07 \x01(\x05\x12\x1d\n\x07workers\x18\x08 \x03(\x0b\x32\x0c.WorkerStats\"\xae\x02\n\x0bWorkerStats\x12\x11\n\tworker_id\x18\x01 \x01(\t\x12\x10\n\x08hostname\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\t\x12\x17\n\x0f\x63urrent_task_id\x18\x04 \x01(\x03\x12\x14\n\x0c\x63urrent_cube\x18\x05 \x03(\x05\x12\x17\n\x0ftasks_completed\x18\x06 \x01(\x05\x12\x14\n\x0ctasks_failed\x18\x07 \x01(\x05\x12\x16\n\x0elast_seen_unix\x18\x08 \x01(\x03\x12\x18\n\x10task_elapsed_sec\x18\t \x01(\x01\x12\x14\n\x0ctask_timeout\x18\n \x01(\x01\x12\x11\n\tcpu_usage\x18\x0b \x01(\x01\x12\x17\n\x0fmemory_usage_mb\x18\x0c \x01(\x01\x12\x18\n\x10memory_usage_pct\x18\r \x01(\x01\x32\xb5\x01\n\rSolverService\x12(\n\x07GetTask\x12\x0f.WorkerIdentity\x1a\x0c.TaskPayload\x12#\n\x0cSubmitResult\x12\x0b.TaskResult\x1a\x06.Empty\x12%\n\x0cReportStatus\x12\r.WorkerStatus\x1a\x06.Empty\x12.\n\x0eGetMasterStats\x12\x06.Empty\x1a\x14.MasterStatsResponseB\x1bZ\x19HydraSAT/src/master/protob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,14 +32,20 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'solver_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z\031HydraSAT/src/master/proto'
-  _globals['_REGISTERREQUEST']._serialized_start=16
-  _globals['_REGISTERREQUEST']._serialized_end=52
-  _globals['_EMPTY']._serialized_start=54
-  _globals['_EMPTY']._serialized_end=61
-  _globals['_COUNTREQUEST']._serialized_start=64
-  _globals['_COUNTREQUEST']._serialized_end=195
-  _globals['_COUNTRESPONSE']._serialized_start=197
-  _globals['_COUNTRESPONSE']._serialized_end=304
-  _globals['_SOLVERSERVICE']._serialized_start=306
-  _globals['_SOLVERSERVICE']._serialized_end=405
+  _globals['_EMPTY']._serialized_start=16
+  _globals['_EMPTY']._serialized_end=23
+  _globals['_WORKERIDENTITY']._serialized_start=25
+  _globals['_WORKERIDENTITY']._serialized_end=78
+  _globals['_TASKPAYLOAD']._serialized_start=81
+  _globals['_TASKPAYLOAD']._serialized_end=211
+  _globals['_TASKRESULT']._serialized_start=213
+  _globals['_TASKRESULT']._serialized_end=317
+  _globals['_WORKERSTATUS']._serialized_start=320
+  _globals['_WORKERSTATUS']._serialized_end=450
+  _globals['_MASTERSTATSRESPONSE']._serialized_start=453
+  _globals['_MASTERSTATSRESPONSE']._serialized_end=660
+  _globals['_WORKERSTATS']._serialized_start=663
+  _globals['_WORKERSTATS']._serialized_end=965
+  _globals['_SOLVERSERVICE']._serialized_start=968
+  _globals['_SOLVERSERVICE']._serialized_end=1149
 # @@protoc_insertion_point(module_scope)

@@ -1,3 +1,4 @@
 # requirements.txt
 grpcio==1.78.0
 protobuf==6.31.1
+psutil==7.2.2

@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/fatt/HydraSAT/cube_generator/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

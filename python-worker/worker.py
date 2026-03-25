@@ -1,142 +1,202 @@
-import subprocess
 import argparse
-import time
 import os
-import grpc
 import shutil
+import socket
+import subprocess
+import threading
+import time
+from pathlib import Path
+ 
+import grpc
+import psutil
 import solver_pb2
 import solver_pb2_grpc
-from pathlib import Path
 from parser import parse_ganak_unweighted_count
 
 
-# When master calls SolveCube, grpc on this worker receives the binary data,
-# decodes it into Python object request and hands to this function
 class SATWorker:
-    def __init__(self, master_address, worker_id):
-        # Check for Docker/System path
-        system_ganak = shutil.which("ganak") or "/usr/local/bin/ganak"
-        # Check for the project-relative path (for Uni VM / No-Root)
-        # Assumes worker.py is in /python-worker/worker.py
-        # This goes up one level to root, then down into src/external...
-        project_root = Path(__file__).parent.parent
-        repo_ganak = project_root / "src/external/ganak-linux-amd64/ganak"        
-
-        # Priority Logic
-        if os.path.exists(system_ganak) and os.access(system_ganak, os.X_OK):
-            self.ganak_path = system_ganak
-        elif repo_ganak.exists():
-            self.ganak_path = str(repo_ganak.absolute())
-        else:
-            # Final fallback to just 'ganak' and hope it's in the PATH
-            self.ganak_path = "ganak"
-
+    def __init__(self, master_address: str, worker_id: str):
         self.master_address = master_address
         self.worker_id = worker_id
-
-    def solve_task(self, task):
-        """Builds the CNF formula and runs the Ganak subprocess."""
-        new_nb_clauses = task.num_clauses + len(task.literals)
-        header = f"p cnf {task.num_vars} {new_nb_clauses}"
-        cube_str = "\n".join(f"{lit} 0" for lit in task.literals)
-
-        # Format the DIMACS file
-        new_formula = f"{header}\n{task.formula_body}\n{cube_str}\n"
-
-        start_time = time.time()
+        self.hostname = socket.gethostname()
+        self.process = psutil.Process(os.getpid())
+        self.ganak_path = self._resolve_ganak()
+ 
+    # ── setup ─────────────────────────────────────────────────────────────────
+ 
+    def _resolve_ganak(self) -> str:
+        """Return the path to the ganak binary, preferring system installs."""
+        system = shutil.which("ganak") or "/usr/local/bin/ganak"
+        repo = Path(__file__).parent.parent / "src/external/ganak-linux-amd64/ganak"
+        if os.path.isfile(system) and os.access(system, os.X_OK):
+            return system
+        if repo.exists():
+            return str(repo.resolve())
+        return "ganak"
+ 
+    # ── stats ──────────────────────────────────────────────────────────────────
+ 
+    def _collect_stats(self) -> tuple[float, float, float]:
+        """Return (cpu_pct, mem_mb, mem_pct) for this process + children."""
         try:
-            result = subprocess.run(
+            cpu = self.process.cpu_percent(interval=0.1)
+            mem_bytes = self.process.memory_info().rss
+ 
+            for child in self.process.children(recursive=True):
+                try:
+                    cpu += child.cpu_percent(interval=None)
+                    mem_bytes += child.memory_info().rss
+                except psutil.NoSuchProcess:
+                    pass
+ 
+            mem_mb = mem_bytes / (1024 * 1024)
+            system_mem = psutil.virtual_memory()
+            mem_pct = (mem_bytes / system_mem.total) * 100
+ 
+            n_cpus = psutil.cpu_count(logical=True) or 1
+            cpu_norm = cpu / n_cpus
+ 
+            return cpu_norm, mem_mb, mem_pct
+        except Exception as e:
+            print(f"[{self.worker_id}] stats error: {e}")
+            return 0.0, 0.0, 0.0
+ 
+    # ── status reporter ────────────────────────────────────────────────────────
+ 
+    def _start_status_reporter(
+        self,
+        stub: solver_pb2_grpc.SolverServiceStub,
+        task_id: int,
+        stop_event: threading.Event,
+        interval: float = 2.0,
+    ) -> threading.Thread:
+        """Spin up a background thread that calls ReportStatus every `interval` seconds."""
+ 
+        def _report():
+            while not stop_event.is_set():
+                cpu, mem_mb, mem_pct = self._collect_stats()
+                elapsed = time.time() - start_ts
+                try:
+                    stub.ReportStatus(solver_pb2.WorkerStatus(
+                        worker_id=self.worker_id,
+                        task_id=task_id,
+                        elapsed_time=elapsed,
+                        cpu_usage=cpu,
+                        memory_mb=mem_mb,
+                        memory_pct=mem_pct,
+                    ))
+                except grpc.RpcError as e:
+                    print(f"[{self.worker_id}] ReportStatus error: {e}")
+                stop_event.wait(interval)
+ 
+        start_ts = time.time()
+        t = threading.Thread(target=_report, daemon=True)
+        t.start()
+        return t
+ 
+    # ── solving ────────────────────────────────────────────────────────────────
+ 
+    def _solve(self, task) -> solver_pb2.TaskResult:
+        """Construct the sub-formula, run ganak, return a TaskResult."""
+        new_clauses = task.num_clauses + len(task.literals)
+        header = f"p cnf {task.num_vars} {new_clauses}"
+        cube_clauses = "\n".join(f"{lit} 0" for lit in task.literals)
+        formula = f"{header}\n{task.formula_body}\n{cube_clauses}\n"
+ 
+        start = time.time()
+        try:
+            proc = subprocess.run(
                 [self.ganak_path, "/dev/stdin"],
-                input=new_formula,
+                input=formula,
                 capture_output=True,
                 text=True,
-                timeout=task.timeout_sec
+                timeout=task.timeout_sec,
             )
-
-            duration = time.time() - start_time
-            count_str = parse_ganak_unweighted_count(result.stdout)
-
-            return solver_pb2.CountResponse(
-                count=count_str,
+            duration = time.time() - start
+            count = parse_ganak_unweighted_count(proc.stdout)
+            return solver_pb2.TaskResult(
+                task_id=task.task_id,
+                worker_id=self.worker_id,
+                count=count,
                 duration_sec=duration,
                 timed_out=False,
-                task_id=task.task_id,
-                worker_id=self.worker_id
             )
-
+ 
         except subprocess.TimeoutExpired:
-            print(f"Task {task.task_id} timed out after {task.timeout_sec}s")
-            return solver_pb2.CountResponse(
+            print(f"[{self.worker_id}] task {task.task_id} timed out after {task.timeout_sec}s")
+            return solver_pb2.TaskResult(
+                task_id=task.task_id,
+                worker_id=self.worker_id,
                 count="0",
                 duration_sec=float(task.timeout_sec),
                 timed_out=True,
-                task_id=task.task_id,
-                worker_id=self.worker_id
             )
-
-
+ 
+    # ── main loop ──────────────────────────────────────────────────────────────
+ 
     def run(self):
-        """ Main loop: Ask for work -> Solve -> Submit -> """
-        # Connect to master
         with grpc.insecure_channel(self.master_address) as channel:
             stub = solver_pb2_grpc.SolverServiceStub(channel)
-            print(f"Worker {self.worker_id}: Connected to master at {self.master_address}")
-
+            print(f"[{self.worker_id}] connected to {self.master_address} (hostname: {self.hostname})")
+ 
             while True:
                 try:
-                    request = solver_pb2.RegisterRequest(worker_id=self.worker_id)
-                    task = stub.GetTask(request)
-
-                    # If TaskId is 0, then Master has no more tasks to assign now
+                    # 1. Ask the master for a task.
+                    task = stub.GetTask(solver_pb2.WorkerIdentity(
+                        worker_id=self.worker_id,
+                        hostname=self.hostname,
+                    ))
+ 
                     if task.task_id == -1:
-                        print(f"Worker {self.worker_id}: No more tasks available, waiting...")
-                        time.sleep(2)  # Wait for a while before asking again
+                        # No work right now — back off briefly.
+                        time.sleep(2)
                         continue
-
-                    print(f"Worker {self.worker_id}: Received task {task.task_id}")
-
-                    # Solve the task
-                    result = self.solve_task(task)
-                    print(f"[*] Task {task.task_id} result: {result.count}. Submitting...")
-
-                    # Submit the result back to Master
+ 
+                    print(f"[{self.worker_id}] received task {task.task_id} "
+                          f"(timeout: {task.timeout_sec}s, cube: {list(task.literals)})")
+ 
+                    # 2. Start live CPU/RAM reporting in the background.
+                    stop_reporter = threading.Event()
+                    self._start_status_reporter(stub, task.task_id, stop_reporter)
+ 
+                    # 3. Solve.
+                    result = self._solve(task)
+ 
+                    # 4. Stop the reporter and submit the result.
+                    stop_reporter.set()
                     stub.SubmitResult(result)
-                    print(f"Worker {self.worker_id}: Submitted result for task {task.task_id}")
-
+                    print(f"[{self.worker_id}] submitted task {task.task_id}: count={result.count}")
+ 
                 except grpc.RpcError as e:
-                    # Check if the error is because the Master is gone
                     if e.code() == grpc.StatusCode.UNAVAILABLE:
-                        print(f"Worker {self.worker_id}: Master is offline. Shutting down gracefully...")
-                        # Breaking the loop allows the 'with' block to close the channel
+                        print(f"[{self.worker_id}] master offline — shutting down")
                         break
-                    else:
-                        print(f"Worker {self.worker_id}: RPC error: {e}")
-                        time.sleep(5)
-
+                    print(f"[{self.worker_id}] RPC error: {e}")
+                    time.sleep(5)
+ 
                 except Exception as e:
-                    print(f"Worker {self.worker_id}: Unexpected error: {e}")
-                    break # Exit on unexpected fatal errors
-
-
+                    import traceback
+                    print(f"[{self.worker_id}] unexpected error: {e}")
+                    traceback.print_exc()
+                    break
+ 
+ 
 if __name__ == "__main__":
+    env_master = os.getenv("MASTER_ADDR")
+ 
     parser = argparse.ArgumentParser()
-    # Check if we have an environment variable from Docker, otherwise use arg
-    env_master = os.getenv("MASTER_ADDR") 
-
-    parser.add_argument("--master",
-                        type=str,
-                        default=env_master if env_master else "master:50051",
-                        help="Master's address (IP:Port)")
-
-    parser.add_argument("--id",
-                        type=str,
-                        default=os.getenv("WORKER_ID", "worker-01"),
-                        help="Unique ID for this worker")
-
+    parser.add_argument(
+        "--master",
+        default=env_master or "master:50051",
+        help="Master address (host:port)",
+    )
+    parser.add_argument(
+        "--id",
+        default=os.getenv("WORKER_ID", "worker-01"),
+        help="Unique worker ID",
+    )
     args = parser.parse_args()
-    
-    # LOUD debug print so you can see what it's actually using
-    print(f"DEBUG: Final Master Address resolved to: {args.master}")
-    
-    worker = SATWorker(args.master, args.id)
-    worker.run()
+ 
+    print(f"Master address: {args.master}")
+    SATWorker(args.master, args.id).run()
+

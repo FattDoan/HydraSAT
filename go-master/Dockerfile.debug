@@ -1,0 +1,22 @@
+FROM golang:1.26.1-alpine AS builder
+WORKDIR /app
+
+# Copy the go.mod and go.sum from the subfolder
+COPY go-master/go.mod go-master/go.sum ./
+RUN go mod download
+
+# Copy the rest of the Master source and the shared Protos
+COPY go-master/ .
+
+# Build with verbose output
+RUN CGO_ENABLED=0 GOOS=linux go build -v -o master_bin ./master
+
+FROM alpine:latest
+WORKDIR /root/
+COPY --from=builder /app/master_bin ./
+RUN chmod +x master_bin && ls -lh master_bin
+
+# Expose the gRPC port
+EXPOSE 50051
+
+CMD ["./master_bin"]

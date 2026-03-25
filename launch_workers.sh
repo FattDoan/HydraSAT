@@ -32,4 +32,3 @@ done
 echo "  -> Starting worker-$(($CORES_TO_USE-1)) in foreground..."
 LAST_CORE=$(($CORES_TO_USE-1))
 taskset -c $LAST_CORE $PY_PATH $WORKER_FILE --master $MASTER_IP_ADDR --id "worker-$LAST_CORE" > "logs/worker_$LAST_CORE.log" 2>&1
-

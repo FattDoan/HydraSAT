@@ -22,3 +22,5 @@ pkg/
 .vscode/
 *.log
 logs/
+
+docs/

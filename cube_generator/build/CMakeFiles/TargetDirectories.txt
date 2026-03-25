@@ -1,0 +1,3 @@
+/home/fatt/HydraSAT/cube_generator/build/CMakeFiles/cube_cli.dir
+/home/fatt/HydraSAT/cube_generator/build/CMakeFiles/edit_cache.dir
+/home/fatt/HydraSAT/cube_generator/build/CMakeFiles/rebuild_cache.dir

@@ -19,20 +19,25 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SolverService_GetTask_FullMethodName      = "/SolverService/GetTask"
-	SolverService_SubmitResult_FullMethodName = "/SolverService/SubmitResult"
+	SolverService_GetTask_FullMethodName        = "/SolverService/GetTask"
+	SolverService_SubmitResult_FullMethodName   = "/SolverService/SubmitResult"
+	SolverService_ReportStatus_FullMethodName   = "/SolverService/ReportStatus"
+	SolverService_GetMasterStats_FullMethodName = "/SolverService/GetMasterStats"
 )
 
 // SolverServiceClient is the client API for SolverService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SolverServiceClient interface {
-	// Worker tell the Master its ID
-	// Master then sends CountRequest to the worker
-	GetTask(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*CountRequest, error)
-	// When the worker finish solving
-	// it sends the result back to the Master using this rpc
-	SubmitResult(ctx context.Context, in *CountResponse, opts ...grpc.CallOption) (*Empty, error)
+	// 1. Worker asks for a task
+	GetTask(ctx context.Context, in *WorkerIdentity, opts ...grpc.CallOption) (*TaskPayload, error)
+	// 2. Worker submits the final count/timeout
+	SubmitResult(ctx context.Context, in *TaskResult, opts ...grpc.CallOption) (*Empty, error)
+	// 3. Worker streams its live CPU/RAM while ganak is running
+	ReportStatus(ctx context.Context, in *WorkerStatus, opts ...grpc.CallOption) (*Empty, error)
+	// 4. TUI asks for the global state to draw the UI
+	// We use Empty instead of a useless StatsRequest
+	GetMasterStats(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*MasterStatsResponse, error)
 }
 
 type solverServiceClient struct {
@@ -43,9 +48,9 @@ func NewSolverServiceClient(cc grpc.ClientConnInterface) SolverServiceClient {
 	return &solverServiceClient{cc}
 }
 
-func (c *solverServiceClient) GetTask(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*CountRequest, error) {
+func (c *solverServiceClient) GetTask(ctx context.Context, in *WorkerIdentity, opts ...grpc.CallOption) (*TaskPayload, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CountRequest)
+	out := new(TaskPayload)
 	err := c.cc.Invoke(ctx, SolverService_GetTask_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -53,10 +58,30 @@ func (c *solverServiceClient) GetTask(ctx context.Context, in *RegisterRequest, 
 	return out, nil
 }
 
-func (c *solverServiceClient) SubmitResult(ctx context.Context, in *CountResponse, opts ...grpc.CallOption) (*Empty, error) {
+func (c *solverServiceClient) SubmitResult(ctx context.Context, in *TaskResult, opts ...grpc.CallOption) (*Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Empty)
 	err := c.cc.Invoke(ctx, SolverService_SubmitResult_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *solverServiceClient) ReportStatus(ctx context.Context, in *WorkerStatus, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, SolverService_ReportStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *solverServiceClient) GetMasterStats(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*MasterStatsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MasterStatsResponse)
+	err := c.cc.Invoke(ctx, SolverService_GetMasterStats_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -67,12 +92,15 @@ func (c *solverServiceClient) SubmitResult(ctx context.Context, in *CountRespons
 // All implementations must embed UnimplementedSolverServiceServer
 // for forward compatibility.
 type SolverServiceServer interface {
-	// Worker tell the Master its ID
-	// Master then sends CountRequest to the worker
-	GetTask(context.Context, *RegisterRequest) (*CountRequest, error)
-	// When the worker finish solving
-	// it sends the result back to the Master using this rpc
-	SubmitResult(context.Context, *CountResponse) (*Empty, error)
+	// 1. Worker asks for a task
+	GetTask(context.Context, *WorkerIdentity) (*TaskPayload, error)
+	// 2. Worker submits the final count/timeout
+	SubmitResult(context.Context, *TaskResult) (*Empty, error)
+	// 3. Worker streams its live CPU/RAM while ganak is running
+	ReportStatus(context.Context, *WorkerStatus) (*Empty, error)
+	// 4. TUI asks for the global state to draw the UI
+	// We use Empty instead of a useless StatsRequest
+	GetMasterStats(context.Context, *Empty) (*MasterStatsResponse, error)
 	mustEmbedUnimplementedSolverServiceServer()
 }
 
@@ -83,11 +111,17 @@ type SolverServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedSolverServiceServer struct{}
 
-func (UnimplementedSolverServiceServer) GetTask(context.Context, *RegisterRequest) (*CountRequest, error) {
+func (UnimplementedSolverServiceServer) GetTask(context.Context, *WorkerIdentity) (*TaskPayload, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetTask not implemented")
 }
-func (UnimplementedSolverServiceServer) SubmitResult(context.Context, *CountResponse) (*Empty, error) {
+func (UnimplementedSolverServiceServer) SubmitResult(context.Context, *TaskResult) (*Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method SubmitResult not implemented")
+}
+func (UnimplementedSolverServiceServer) ReportStatus(context.Context, *WorkerStatus) (*Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReportStatus not implemented")
+}
+func (UnimplementedSolverServiceServer) GetMasterStats(context.Context, *Empty) (*MasterStatsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetMasterStats not implemented")
 }
 func (UnimplementedSolverServiceServer) mustEmbedUnimplementedSolverServiceServer() {}
 func (UnimplementedSolverServiceServer) testEmbeddedByValue()                       {}
@@ -111,7 +145,7 @@ func RegisterSolverServiceServer(s grpc.ServiceRegistrar, srv SolverServiceServe
 }
 
 func _SolverService_GetTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterRequest)
+	in := new(WorkerIdentity)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -123,13 +157,13 @@ func _SolverService_GetTask_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: SolverService_GetTask_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SolverServiceServer).GetTask(ctx, req.(*RegisterRequest))
+		return srv.(SolverServiceServer).GetTask(ctx, req.(*WorkerIdentity))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _SolverService_SubmitResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CountResponse)
+	in := new(TaskResult)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -141,7 +175,43 @@ func _SolverService_SubmitResult_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: SolverService_SubmitResult_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SolverServiceServer).SubmitResult(ctx, req.(*CountResponse))
+		return srv.(SolverServiceServer).SubmitResult(ctx, req.(*TaskResult))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SolverService_ReportStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WorkerStatus)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SolverServiceServer).ReportStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SolverService_ReportStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SolverServiceServer).ReportStatus(ctx, req.(*WorkerStatus))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SolverService_GetMasterStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SolverServiceServer).GetMasterStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SolverService_GetMasterStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SolverServiceServer).GetMasterStats(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -160,6 +230,14 @@ var SolverService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SubmitResult",
 			Handler:    _SolverService_SubmitResult_Handler,
+		},
+		{
+			MethodName: "ReportStatus",
+			Handler:    _SolverService_ReportStatus_Handler,
+		},
+		{
+			MethodName: "GetMasterStats",
+			Handler:    _SolverService_GetMasterStats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

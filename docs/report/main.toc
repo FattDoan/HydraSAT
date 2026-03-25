@@ -1,7 +1,0 @@
-\babel@toc {english}{}\relax 
-\contentsline {chapter}{\numberline {A}Introduction}{2}{chapter.1}%
-\contentsline {chapter}{\numberline {B}Project progression}{3}{chapter.2}%
-\contentsline {section}{\numberline {B.1}Preliminary work}{3}{section.2.1}%
-\contentsline {section}{\numberline {B.2}Phase 1: Design and initial implementation}{3}{section.2.2}%
-\contentsline {section}{\numberline {B.3}Phase 2: Distributed Infrastructure and Networking}{3}{section.2.3}%
-\contentsline {chapter}{Bibliography}{4}{section.2.3}%
