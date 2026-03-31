@@ -1,0 +1,5 @@
+[0] Config.pm:328> INFO - This is Biber 2.21
+[0] Config.pm:331> INFO - Logfile is '/home/fatt/L3/latex/HydraSAT_report/refs.blg'
+[78] biber:342> INFO - === Wed Feb 18, 2026, 13:58:41
+[182] Utils.pm:479> ERROR - Cannot find '/home/fatt/L3/latex/HydraSAT_report/refs.bcf'!
+[182] Biber.pm:137> INFO - ERRORS: 1

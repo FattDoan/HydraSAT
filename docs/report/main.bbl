@@ -1,0 +1,290 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global/global}
+    \entry{chrono-sat}{thesis}{}{}
+      \name{author}{1}{}{%
+        {{hash=d15663e8e3ca842a5c8eaa5f548802c1}{%
+           family={Coutelier},
+           familyi={C\bibinitperiod},
+           given={Robin},
+           giveni={R\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Université de Liège}%
+      }
+      \list{location}{1}{%
+        {Liège, Belgique}%
+      }
+      \strng{namehash}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{fullhash}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{fullhashraw}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{bibnamehash}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{authorbibnamehash}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{authornamehash}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{authorfullhash}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{authorfullhashraw}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{Unpublished master's thesis}
+      \field{title}{Chronological vs. non-chronological backtracking in satisfiability modulo theories}
+      \field{type}{mathesis}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://matheo.uliege.be/handle/2268.2/18041
+      \endverb
+      \verb{url}
+      \verb https://matheo.uliege.be/handle/2268.2/18041
+      \endverb
+    \endentry
+    \entry{count-sat-handbook}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=f6d4a9dc02404c0d2b814928bfcd9eb9}{%
+           family={Armin\bibnamedelima Biere},
+           familyi={A\bibinitperiod\bibinitdelim B\bibinitperiod},
+           given={Hans\bibnamedelimb van\bibnamedelima Maaren},
+           giveni={H\bibinitperiod\bibinitdelim v\bibinitperiod\bibinitdelim M\bibinitperiod},
+           suffix={Marijn\bibnamedelima Heule},
+           suffixi={M\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+        {{hash=2c6525d6659c865a8b2aef1472a790de}{%
+           family={Walsch},
+           familyi={W\bibinitperiod},
+           given={Toby},
+           giveni={T\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {IOS Press}%
+      }
+      \strng{namehash}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{fullhash}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{fullhashraw}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{bibnamehash}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{authorbibnamehash}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{authornamehash}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{authorfullhash}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{authorfullhashraw}{ad458b9d05ebcf414061f8a5915da16b}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Handbook of Satisfiability}
+      \field{year}{2008}
+      \verb{urlraw}
+      \verb https://www.cs.cornell.edu/~sabhar/chapters/ModelCounting-SAT-Handbook-prelim.pdf
+      \endverb
+      \verb{url}
+      \verb https://www.cs.cornell.edu/~sabhar/chapters/ModelCounting-SAT-Handbook-prelim.pdf
+      \endverb
+    \endentry
+    \entry{KR2025-65}{inproceedings}{}{}
+      \name{author}{3}{}{%
+        {{hash=739869603dbadbb19c8395f1957c9f61}{%
+           family={Xu},
+           familyi={X\bibinitperiod},
+           given={Zhenghang},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=a3dac84ba2cc18db09cc5a0c38614c7c}{%
+           family={Yin},
+           familyi={Y\bibinitperiod},
+           given={Minghao},
+           giveni={M\bibinitperiod}}}%
+        {{hash=b6d73d9e55398618ca357f9c210917ab}{%
+           family={Lagniez},
+           familyi={L\bibinitperiod},
+           given={Jean\bibnamedelima Marie},
+           giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \strng{namehash}{05ad1b08c6984addda64448f78ea605c}
+      \strng{fullhash}{05ad1b08c6984addda64448f78ea605c}
+      \strng{fullhashraw}{05ad1b08c6984addda64448f78ea605c}
+      \strng{bibnamehash}{05ad1b08c6984addda64448f78ea605c}
+      \strng{authorbibnamehash}{05ad1b08c6984addda64448f78ea605c}
+      \strng{authornamehash}{05ad1b08c6984addda64448f78ea605c}
+      \strng{authorfullhash}{05ad1b08c6984addda64448f78ea605c}
+      \strng{authorfullhashraw}{05ad1b08c6984addda64448f78ea605c}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{{Proceedings of the 22nd International Conference on Principles of Knowledge Representation and Reasoning}}
+      \field{month}{10}
+      \field{title}{{An Embarrassingly Parallel Model Counter}}
+      \field{year}{2025}
+      \field{pages}{670\bibrangedash 681}
+      \range{pages}{12}
+      \verb{doi}
+      \verb 10.24963/kr.2025/65
+      \endverb
+      \verb{urlraw}
+      \verb https://doi.org/10.24963/kr.2025/65
+      \endverb
+      \verb{url}
+      \verb https://doi.org/10.24963/kr.2025/65
+      \endverb
+    \endentry
+    \entry{SM2025}{inproceedings}{}{}
+      \name{author}{2}{}{%
+        {{hash=781b1be02fd03c3b0bb119184634c537}{%
+           family={Soos},
+           familyi={S\bibinitperiod},
+           given={Mate},
+           giveni={M\bibinitperiod}}}%
+        {{hash=5c4fa3acb9479a07274e24a36eb9feef}{%
+           family={Meel},
+           familyi={M\bibinitperiod},
+           given={Kuldeep\bibnamedelima S.},
+           giveni={K\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+      }
+      \strng{namehash}{6a77130bfcc67867169364b55eef989f}
+      \strng{fullhash}{6a77130bfcc67867169364b55eef989f}
+      \strng{fullhashraw}{6a77130bfcc67867169364b55eef989f}
+      \strng{bibnamehash}{6a77130bfcc67867169364b55eef989f}
+      \strng{authorbibnamehash}{6a77130bfcc67867169364b55eef989f}
+      \strng{authornamehash}{6a77130bfcc67867169364b55eef989f}
+      \strng{authorfullhash}{6a77130bfcc67867169364b55eef989f}
+      \strng{authorfullhashraw}{6a77130bfcc67867169364b55eef989f}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the International Conference on Computer Aided Verification (CAV)}
+      \field{title}{Engineering an Efficient Probabilistic Exact Model Counter}
+      \field{year}{2025}
+    \endentry
+    \entry{SRSM19}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{hash=2ebc97c1eab4d7f7cc603b0a80ad4c33}{%
+           family={Sharma},
+           familyi={S\bibinitperiod},
+           given={Shubham},
+           giveni={S\bibinitperiod}}}%
+        {{hash=aeb2442c2b7335323edbb1ec1080ba0f}{%
+           family={Roy},
+           familyi={R\bibinitperiod},
+           given={Subhajit},
+           giveni={S\bibinitperiod}}}%
+        {{hash=781b1be02fd03c3b0bb119184634c537}{%
+           family={Soos},
+           familyi={S\bibinitperiod},
+           given={Mate},
+           giveni={M\bibinitperiod}}}%
+        {{hash=5c4fa3acb9479a07274e24a36eb9feef}{%
+           family={Meel},
+           familyi={M\bibinitperiod},
+           given={Kuldeep\bibnamedelima S.},
+           giveni={K\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+      }
+      \strng{namehash}{cd5ebb29056cfd0aeaae900de0ffd14b}
+      \strng{fullhash}{a553670ec1697462138f65e7f48ece22}
+      \strng{fullhashraw}{a553670ec1697462138f65e7f48ece22}
+      \strng{bibnamehash}{cd5ebb29056cfd0aeaae900de0ffd14b}
+      \strng{authorbibnamehash}{cd5ebb29056cfd0aeaae900de0ffd14b}
+      \strng{authornamehash}{cd5ebb29056cfd0aeaae900de0ffd14b}
+      \strng{authorfullhash}{a553670ec1697462138f65e7f48ece22}
+      \strng{authorfullhashraw}{a553670ec1697462138f65e7f48ece22}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of International Joint Conference on Artificial Intelligence (IJCAI)}
+      \field{title}{GANAK: A Scalable Probabilistic Exact Model Counter}
+      \field{year}{2019}
+    \endentry
+    \entry{BiereFallerFazekasFleuryFroleyks-CAV24}{inproceedings}{}{}
+      \name{author}{6}{}{%
+        {{hash=22081d00e30965a89f413e528510617e}{%
+           family={Biere},
+           familyi={B\bibinitperiod},
+           given={Armin},
+           giveni={A\bibinitperiod}}}%
+        {{hash=a1349c1859354955c1cb0f8a9310cc92}{%
+           family={Faller},
+           familyi={F\bibinitperiod},
+           given={Tobias},
+           giveni={T\bibinitperiod}}}%
+        {{hash=aeba9a6c0728884b4ec3500970b53c69}{%
+           family={Fazekas},
+           familyi={F\bibinitperiod},
+           given={Katalin},
+           giveni={K\bibinitperiod}}}%
+        {{hash=2924c54a9875b88d7893f70cb5c5e729}{%
+           family={Fleury},
+           familyi={F\bibinitperiod},
+           given={Mathias},
+           giveni={M\bibinitperiod}}}%
+        {{hash=1045a4734d89ee905d4a53b5ca50a3b2}{%
+           family={Froleyks},
+           familyi={F\bibinitperiod},
+           given={Nils},
+           giveni={N\bibinitperiod}}}%
+        {{hash=437090c86b89faa523536c5e0654cdc4}{%
+           family={Pollitt},
+           familyi={P\bibinitperiod},
+           given={Florian},
+           giveni={F\bibinitperiod}}}%
+      }
+      \name{editor}{2}{}{%
+        {{hash=b6a85aabf982fa0236b58eb6b9f2ce66}{%
+           family={Gurfinkel},
+           familyi={G\bibinitperiod},
+           given={Arie},
+           giveni={A\bibinitperiod}}}%
+        {{hash=e7a563f2d0aa7eca2d78388c064a0db4}{%
+           family={Ganesh},
+           familyi={G\bibinitperiod},
+           given={Vijay},
+           giveni={V\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{bc3be1691d20d567b9af500e799dfef0}
+      \strng{fullhash}{d842a13c4e55b8e00662f350a4d66795}
+      \strng{fullhashraw}{d842a13c4e55b8e00662f350a4d66795}
+      \strng{bibnamehash}{bc3be1691d20d567b9af500e799dfef0}
+      \strng{authorbibnamehash}{bc3be1691d20d567b9af500e799dfef0}
+      \strng{authornamehash}{bc3be1691d20d567b9af500e799dfef0}
+      \strng{authorfullhash}{d842a13c4e55b8e00662f350a4d66795}
+      \strng{authorfullhashraw}{d842a13c4e55b8e00662f350a4d66795}
+      \strng{editorbibnamehash}{ece130ee3745c7b498207e44312cfc9a}
+      \strng{editornamehash}{ece130ee3745c7b498207e44312cfc9a}
+      \strng{editorfullhash}{ece130ee3745c7b498207e44312cfc9a}
+      \strng{editorfullhashraw}{ece130ee3745c7b498207e44312cfc9a}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Computer Aided Verification - 36th International Conference, {CAV} 2024, Montreal, QC, Canada, July 24-27, 2024, Proceedings, Part {I}}
+      \field{series}{Lecture Notes in Computer Science}
+      \field{title}{{CaDiCaL 2.0}}
+      \field{volume}{14681}
+      \field{year}{2024}
+      \field{pages}{133\bibrangedash 152}
+      \range{pages}{20}
+      \verb{doi}
+      \verb 10.1007/978-3-031-65627-9\_7
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

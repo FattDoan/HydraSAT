@@ -1,0 +1,146 @@
+% !TEX root = main.tex
+\documentclass{report}
+\input{File_Setup.tex}
+\usepackage[cyr]{aeguill}
+\usepackage[english]{babel}
+\usepackage{xpatch}
+\usepackage{fancyhdr}
+\usepackage{tcolorbox}
+\usepackage{lmodern}
+\usepackage{ragged2e}
+\usepackage{setspace}
+\usepackage{wrapfig}
+\usepackage{graphicx}
+\usepackage{placeins}
+\usepackage{csquotes}
+\usepackage[backend=biber, style=numeric, sorting=none]{biblatex}
+\addbibresource{refs.bib} % The name of the bibliography file
+% Chapter config
+\renewcommand{\thechapter}{\arabic{chapter}}
+\titleformat{\chapter}[hang]
+  {\normalfont\Large\bfseries}
+  {\thechapter.\ }   % "1. Title"
+  {0pt}
+  {}
+\titlespacing*{\chapter}
+{0pt}    % left margin
+{0pt}    % space before chapter title
+{0pt}   % space after chapter title
+
+% Redefine section formatting
+\titleformat{\section}[hang]  % Align title to the left, with number
+  {\normalfont\bfseries\large}       % Normal font, but bold
+  {\thesection}                     % Section number
+  {1em}                             % Space between number and title text
+  {}                                % Empty, no additional formatting
+
+\titleformat{\subsection}[hang]
+  {\normalfont\bfseries}       % Normal font, but bold
+  {\thesubsection}                  % Subsection number
+  {1em}                             % Space between number and title text
+  {}
+
+\fancyhf{} % Clear all headers and footers
+\renewcommand{\headrulewidth}{0pt} % Removes the line from normal pages
+
+% This part removes the line from Chapter start pages (plain style)
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+\fancyfoot[C]{\thepage} % Adds page number to the center footer of normal pages
+
+\setlength{\parskip}{0.3em}
+\setlength{\parindent}{1em}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    
+    % --- Top Logos Section ---
+    \vspace*{1cm}
+    \begin{minipage}{0.2\textwidth}
+        \centering
+        \includegraphics[height=1.75cm]{lmf-logo.png} % Adjust height as needed
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.6\textwidth}
+        \centering
+        \includegraphics[height=1.75cm]{LOGOS_ENS-PARIS-SACLAY_UPSAY_2.png}
+    \end{minipage}
+    
+    \vspace{3.5cm}
+    
+    {\scshape\Large Research project (TER) report - Spring 2026 \par}
+    
+    \vfill
+    
+    %%%% PROJECT TITLE
+    {\huge\bfseries Distributed framework for \#SAT solvers \par}
+    \vfill
+    
+    %%%% AUTHOR
+    {\Large\itshape Thanh Phat Doan \par}
+    
+    \vspace{1cm}
+    %%%% SUPERVISOR
+    {\large Under the supervision of \par}
+    {\large\bfseries Mihaela Sighireanu \par}
+    {\itshape Formal Methods Laboratory (LMF)\par}
+    {\itshape ENS Paris-Saclay \par}
+    \vfill
+    {\large \today \par}
+\end{titlepage}
+
+\newpage
+\thispagestyle{empty}
+\begin{preface}
+    TODO
+\end{preface}
+\vspace{1cm}
+
+\begin{abstract}
+    TODO
+\end{abstract}
+
+\newpage
+\doublespacing
+\hypersetup{pageanchor=true}
+\setcounter{page}{1}
+\tableofcontents
+
+\chapter{Context : SAT and \#SAT}
+(TODO) 
+the general context of the project
+
+\cite{chrono-sat}
+\cite{count-sat-handbook}
+\cite{KR2025-65}
+\cite{SM2025}
+\cite{SRSM19}
+\cite{BiereFallerFazekasFleuryFroleyks-CAV24}
+
+\chapter{Motivation}
+
+\chapter{Sequential solver}
+
+\chapter{My contribution}
+
+\section{General schema}
+
+\section{Heuristics for work partition}
+
+\chapter{Implementation and evaluation}
+\section{Implementation}
+
+\section{Evaluation}
+
+\chapter{Conclusion and future work}
+\newpage
+\printbibliography[heading=bibintoc, title={Bibliography}]
+
+
+\end{document}
