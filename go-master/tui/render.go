@@ -50,13 +50,13 @@ func renderSystemOverview(s SystemStats, width int) string {
 	}
 	cpuBar := renderProgressBar(avgCPU, 30, "#e74c3c", "#2ecc71")
 
-	avgTaskStr := "n/a (no completions yet)"
+	avgTaskStr := "N/A"
 	if s.AvgTaskSec > 0 {
 		avgTaskStr = fmt.Sprintf("%.2fs", s.AvgTaskSec)
 	}
 
 	timeoutStr := "none"
-	if s.CurrentTimeoutSec > 0 {
+	if s.CurrentTimeoutSec > 0 && s.AvgTaskSec > 0 {
 		timeoutStr = fmt.Sprintf("%.0fs  (= avg × %.1fx)",
 			s.CurrentTimeoutSec, s.CurrentTimeoutSec/max(s.AvgTaskSec, 0.001))
 	}
