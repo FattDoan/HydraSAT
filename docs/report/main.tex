@@ -4,6 +4,12 @@
 \usepackage[cyr]{aeguill}
 \usepackage[english]{babel}
 \usepackage{xpatch}
+
+%% Remove the blank page after each chapter
+\makeatletter
+\xpatchcmd{\chapter}{\if@openright\cleardoublepage\else\clearpage\fi}{}{}{}
+\makeatother
+
 \usepackage{fancyhdr}
 \usepackage{tcolorbox}
 \usepackage{lmodern}
@@ -52,8 +58,8 @@
 
 \fancyfoot[C]{\thepage} % Adds page number to the center footer of normal pages
 
-\setlength{\parskip}{0.3em}
-\setlength{\parindent}{1em}
+\setlength{\parskip}{1em}
+\setlength{\parindent}{0em}
 
 \begin{document}
 
@@ -95,39 +101,141 @@
     {\large \today \par}
 \end{titlepage}
 
-\newpage
-\thispagestyle{empty}
-\begin{preface}
-    TODO
-\end{preface}
-\vspace{1cm}
 
+\setcounter{page}{1}
+\newpage
+\thispagestyle{plain}
 \begin{abstract}
-    TODO
+Model counting (\#SAT) is a fundamental problem in automated reasoning with 
+applications ranging from program verification to probabilistic inference. 
+While significant progress has been made in sequential model counters,
+many real-world instances remain computationally intractable for single-machine solving. 
+This project presents a distributed framework for model counting 
+that decomposes the search space into independent subproblems and 
+distributes them across multiple workers. 
+Unlike existing approaches that rely on fixed cube decomposition strategies, 
+the framework implements adaptive timeout mechanisms and dynamic work redistribution
+to handle heavy-tailed problem distributions. 
+We demonstrate the framework's effectiveness on standard benchmarks and 
+discuss future directions for search space partitioning heuristics.
 \end{abstract}
 
 \newpage
-\doublespacing
+\onehalfspacing
 \hypersetup{pageanchor=true}
-\setcounter{page}{1}
 \tableofcontents
+\newpage
+\chapter{Context}
+The Boolean Satisfiability Problem (\textbf{SAT}) represents 
+the foundational challenge in automated reasoning, 
+seeking to determine if there exists an assignment of truth values 
+to variables that renders a given propositional formula true. 
+These formulas are typically expressed in Conjunctive Normal Form (\textbf{CNF}), 
+which consists of a conjunction of clauses, each representing a disjunction of literals.
+Consider the formula in CNF form $F = (x1 \lor x2) \land (\lnot x1 \lor x3) \land (\lnot x2 \lor \lnot x3)$.
+A SAT solver aims to identify a satisfying assignment, such as ${\{x1 = \top, x2 = \bot, x3 = \top\}}$,
+which makes the formula evaluate to true.
 
-\chapter{Context : SAT and \#SAT}
-(TODO) 
-the general context of the project
+This assessment of satisfiability is crucial across various domains, including hardware and software verification.
+For instance, verifying that a software program adheres to its specifications 
+can be translated into a SAT problem, where the program's behavior is encoded as a propositional formula. 
+Because of such wide-ranging applications, despite the NP-completeness of SAT, there has been significant progress in developing efficient 
+solvers (notably CaDiCaL solver \cite{BiereFallerFazekasFleuryFroleyks-CAV24}) that can handle large and complex instances using sophisticated algorithmic techniques like Conflict-Driven Clause Learning (CDCL), 
+chronological and non-chronological backtracking \cite{chrono-sat} to efficiently navigate and reduce the search space.
 
-\cite{chrono-sat}
-\cite{count-sat-handbook}
-\cite{KR2025-65}
-\cite{SM2025}
-\cite{SRSM19}
-\cite{BiereFallerFazekasFleuryFroleyks-CAV24}
+While SAT addresses the existence of a solution, Model Counting (\textbf{\#SAT}) extends this problem by
+seeking to determine the total number of satisfying assignments 
+within the $2^n$ possible configurations of a formula with $n$ variables.
+This shift from decision to quantification elevates the problem to \#P-complete \cite{count-sat-handbook}, introducing
+a significantly higher level of computational complexity. However, \#SAT enables a deeper analysis than classical SAT,
+providing insights into the solution space's structure and size. Particularly in the case of software verification,
+the number of satisfying assignments can be used to estimate the proportion of inputs for which the program
+behaves correctly, providing a probabilistic measure of correctness. 
+Another prominent application of \#SAT is in security analysis, 
+where it can be used to evaluate the robustness of cryptographic protocols by not only determining if a vulnerability exists but also
+counting the number of ways an adversary can compromise a system and therefore assessing the risk level.
+
 
 \chapter{Motivation}
+Despite the advancements in current state-of-the-art \#SAT solvers, many real-world instances remain computationally impractical for
+single-machine solving due to the exponential growth of the search space. 
+Therefore, there is a pressing need for exploration of parrelization techniques in order to satisfy the demand of large-scale industrial benchmarks (e.g., circuit verification with millions of variables)
+or time-sensitive applications (e.g., probalistic inference in machine learning). Unfortunately, as more complex algorithms and heuristics are developed for model counting,
+it is not trivial to adapt them to a distributed setting since they often rely on intricate interactions between components (component caching, clause learning, etc).
 
-\chapter{Sequential solver}
+However, recent work has shown that model counting do exhibits parallel characteristics when the search space is appropriately decomposed. The paper \cite{KR2025-65}
+demonstrates that by splitting the search space using cube decomposition, independent subproblems can be solved in parallel with minimal communication overhead.
+The cube-and-conquer paradigm \cite{cube-conquer} involves partitioning the search space into smaller "cubes" (partial assignments) and solving each cube independently, 
+which can be effectively parallelized across multiple workers. 
+While this approach has shown significant speedups for sequential solvers, 
+it has not been fully explored in a distributed context, especially with adaptive strategies for 
+handling heavy-tailed distributions of subproblem difficulty, where some subproblems may be solved very quickly, 
+while others may require significantly more time. 
+
+Accurately estimating the computational difficulty of these subproblems before solving them is challenging, 
+and static partitioning strategies may lead to load imbalance and resource underutilization.
+Therefore, to address these problems, we propose the 
+implementation of adaptive timeout mechanisms and dynamic work redistribution strategies.
+Furthermore, we intend to move beyond the constraints of traditional Message Passing Interface (\textbf{MPI}) 
+by developing a flexible framework that supports heterogeneous 
+deployment across mixed environments. By leveraging \textbf{gRPC} for inter-node communication, 
+the solver can seamlessly integrate diverse resources, ranging from High-Performance Computing (HPC) clusters and cloud-based virtual machines to local workstations, 
+into a unified distributed solving process. 
+This modular architecture treats the underlying model counters as black boxes, 
+allowing the framework to be easily adapted to any solver by 
+simply wrapping its input and output interfaces within the distributed messaging layer.
+
+\chapter{Sequential \#SAT solver background}
+\section{Ganak2}
+\vspace{-1em}
+For the primary evaluation of this work, Ganak2 \cite{SM2025} \cite{SRSM19} is chosen and utilized as the core sequential backend. 
+Ganak2 is a state-of-the-art model counter that builds upon the sharpSAT architecture, 
+incorporating advanced component caching mechanisms where independent sub-formulas 
+encountered during the search process are hashed and stored to avoid redundant computations. 
+To further enhance efficiency, Ganak2 integrates the Arjun preprocessor to identify 
+a minimal independent support of variables, effectively reducing the dimensionality 
+of the search space from $2^n$ to $2^k$, where $k \ll n$. 
+The solver also leverages standard SAT-based heuristics, 
+including Conflict-Driven Clause Learning (CDCL) and Variable State Independent Decaying Sum (VSIDS) branching, 
+to prune the search space through conflict analysis. The latest version of Ganak2 as of 2026 
+has introduced multi-threading capabilities. This would actually act as a complementary parallelization layer to our distributed framework,
+allowing for efficient intra-node parallelism while our framework handles inter-node distribution of subproblems.
+\section{Alternative solvers}
+\vspace{-1em}
+Alternative sequential engines with different flavors of heuristics and optimizations
+all should be compatible with our distributed framework as long as they can be invoked via command line and accept standard
+DIMACS CNF \cite{sat-dimacs} input. Some notable names in current landscape of model counting include:
+\begin{itemize}
+    \item \textbf{d4} : a knowledge compilation-based counter that compiles formulas into decision-DNNFs \cite{dnnf}
+    \item \textbf{ApproxMC} \cite{approxMC} : an approximate model counter that provides probabilistic guarantees on the count. 
+    It is particularly useful for large instances where exact counting is infeasible or 
+    when an estimate is sufficient for the application at hand, offering a trade-off between accuracy and computational resources.
+    \item \textbf{SharpSAT} \cite{sharpSAT} : A component-caching counter upon which Ganak2 is built, and its successor \textbf{SharpSAT-TD} 
+        \cite{sharpSAT-TD} with
+        the introduction of tree-decomposition techniques \cite{tree-decomp} 
+        to further optimize the search process.
+\end{itemize}
 
 \chapter{My contribution}
+\section{Work parition}
+Formally, a cube $C$ is a conjunction of literals $l_1 \land l_2 \land ... \land l_k$ representing a partial 
+assignment to a subset of variables in formula $F$. 
+To partition the search space, a set of $m$ cubes ${C_1, C_2, ... ,C_m}$ is generated such that 
+they cover all possible assignments and do not overlap. 
+This requires that their disjunction is a tautology: 
+\[
+\bigvee_{i=1}^{m} C_i \equiv \top
+\]
+and that for any $i \neq j$, the cubes are contradictory, ${C_i \land C_j \equiv \bot}$. 
+Under these conditions, the total model count $\#(F)$ is the sum of the counts of the individual subproblems:
+\[
+\#(F) = \sum_{i=1}^{m} \#(F \wedge C_i)
+\]
+This additive property allows each worker in a distributed system to solve $F \land C_i$ independently. 
+Since the search space is split into disjoint parts, the final result is 
+obtained by a simple summation of the integer counts returned by each worker, 
+requiring no further coordination between nodes during the solving phase.
+
 
 \section{General schema}
 
@@ -141,6 +249,6 @@ the general context of the project
 \chapter{Conclusion and future work}
 \newpage
 \printbibliography[heading=bibintoc, title={Bibliography}]
-
+    
 
 \end{document}

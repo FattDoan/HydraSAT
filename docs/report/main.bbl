@@ -19,196 +19,6 @@
 
 \refsection{0}
   \datalist[entry]{none/global//global/global/global}
-    \entry{chrono-sat}{thesis}{}{}
-      \name{author}{1}{}{%
-        {{hash=d15663e8e3ca842a5c8eaa5f548802c1}{%
-           family={Coutelier},
-           familyi={C\bibinitperiod},
-           given={Robin},
-           giveni={R\bibinitperiod}}}%
-      }
-      \list{institution}{1}{%
-        {Université de Liège}%
-      }
-      \list{location}{1}{%
-        {Liège, Belgique}%
-      }
-      \strng{namehash}{d15663e8e3ca842a5c8eaa5f548802c1}
-      \strng{fullhash}{d15663e8e3ca842a5c8eaa5f548802c1}
-      \strng{fullhashraw}{d15663e8e3ca842a5c8eaa5f548802c1}
-      \strng{bibnamehash}{d15663e8e3ca842a5c8eaa5f548802c1}
-      \strng{authorbibnamehash}{d15663e8e3ca842a5c8eaa5f548802c1}
-      \strng{authornamehash}{d15663e8e3ca842a5c8eaa5f548802c1}
-      \strng{authorfullhash}{d15663e8e3ca842a5c8eaa5f548802c1}
-      \strng{authorfullhashraw}{d15663e8e3ca842a5c8eaa5f548802c1}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{note}{Unpublished master's thesis}
-      \field{title}{Chronological vs. non-chronological backtracking in satisfiability modulo theories}
-      \field{type}{mathesis}
-      \field{year}{2023}
-      \verb{urlraw}
-      \verb https://matheo.uliege.be/handle/2268.2/18041
-      \endverb
-      \verb{url}
-      \verb https://matheo.uliege.be/handle/2268.2/18041
-      \endverb
-    \endentry
-    \entry{count-sat-handbook}{article}{}{}
-      \name{author}{2}{}{%
-        {{hash=f6d4a9dc02404c0d2b814928bfcd9eb9}{%
-           family={Armin\bibnamedelima Biere},
-           familyi={A\bibinitperiod\bibinitdelim B\bibinitperiod},
-           given={Hans\bibnamedelimb van\bibnamedelima Maaren},
-           giveni={H\bibinitperiod\bibinitdelim v\bibinitperiod\bibinitdelim M\bibinitperiod},
-           suffix={Marijn\bibnamedelima Heule},
-           suffixi={M\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
-        {{hash=2c6525d6659c865a8b2aef1472a790de}{%
-           family={Walsch},
-           familyi={W\bibinitperiod},
-           given={Toby},
-           giveni={T\bibinitperiod}}}%
-      }
-      \list{publisher}{1}{%
-        {IOS Press}%
-      }
-      \strng{namehash}{ad458b9d05ebcf414061f8a5915da16b}
-      \strng{fullhash}{ad458b9d05ebcf414061f8a5915da16b}
-      \strng{fullhashraw}{ad458b9d05ebcf414061f8a5915da16b}
-      \strng{bibnamehash}{ad458b9d05ebcf414061f8a5915da16b}
-      \strng{authorbibnamehash}{ad458b9d05ebcf414061f8a5915da16b}
-      \strng{authornamehash}{ad458b9d05ebcf414061f8a5915da16b}
-      \strng{authorfullhash}{ad458b9d05ebcf414061f8a5915da16b}
-      \strng{authorfullhashraw}{ad458b9d05ebcf414061f8a5915da16b}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{title}{Handbook of Satisfiability}
-      \field{year}{2008}
-      \verb{urlraw}
-      \verb https://www.cs.cornell.edu/~sabhar/chapters/ModelCounting-SAT-Handbook-prelim.pdf
-      \endverb
-      \verb{url}
-      \verb https://www.cs.cornell.edu/~sabhar/chapters/ModelCounting-SAT-Handbook-prelim.pdf
-      \endverb
-    \endentry
-    \entry{KR2025-65}{inproceedings}{}{}
-      \name{author}{3}{}{%
-        {{hash=739869603dbadbb19c8395f1957c9f61}{%
-           family={Xu},
-           familyi={X\bibinitperiod},
-           given={Zhenghang},
-           giveni={Z\bibinitperiod}}}%
-        {{hash=a3dac84ba2cc18db09cc5a0c38614c7c}{%
-           family={Yin},
-           familyi={Y\bibinitperiod},
-           given={Minghao},
-           giveni={M\bibinitperiod}}}%
-        {{hash=b6d73d9e55398618ca357f9c210917ab}{%
-           family={Lagniez},
-           familyi={L\bibinitperiod},
-           given={Jean\bibnamedelima Marie},
-           giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
-      }
-      \strng{namehash}{05ad1b08c6984addda64448f78ea605c}
-      \strng{fullhash}{05ad1b08c6984addda64448f78ea605c}
-      \strng{fullhashraw}{05ad1b08c6984addda64448f78ea605c}
-      \strng{bibnamehash}{05ad1b08c6984addda64448f78ea605c}
-      \strng{authorbibnamehash}{05ad1b08c6984addda64448f78ea605c}
-      \strng{authornamehash}{05ad1b08c6984addda64448f78ea605c}
-      \strng{authorfullhash}{05ad1b08c6984addda64448f78ea605c}
-      \strng{authorfullhashraw}{05ad1b08c6984addda64448f78ea605c}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{booktitle}{{Proceedings of the 22nd International Conference on Principles of Knowledge Representation and Reasoning}}
-      \field{month}{10}
-      \field{title}{{An Embarrassingly Parallel Model Counter}}
-      \field{year}{2025}
-      \field{pages}{670\bibrangedash 681}
-      \range{pages}{12}
-      \verb{doi}
-      \verb 10.24963/kr.2025/65
-      \endverb
-      \verb{urlraw}
-      \verb https://doi.org/10.24963/kr.2025/65
-      \endverb
-      \verb{url}
-      \verb https://doi.org/10.24963/kr.2025/65
-      \endverb
-    \endentry
-    \entry{SM2025}{inproceedings}{}{}
-      \name{author}{2}{}{%
-        {{hash=781b1be02fd03c3b0bb119184634c537}{%
-           family={Soos},
-           familyi={S\bibinitperiod},
-           given={Mate},
-           giveni={M\bibinitperiod}}}%
-        {{hash=5c4fa3acb9479a07274e24a36eb9feef}{%
-           family={Meel},
-           familyi={M\bibinitperiod},
-           given={Kuldeep\bibnamedelima S.},
-           giveni={K\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
-      }
-      \strng{namehash}{6a77130bfcc67867169364b55eef989f}
-      \strng{fullhash}{6a77130bfcc67867169364b55eef989f}
-      \strng{fullhashraw}{6a77130bfcc67867169364b55eef989f}
-      \strng{bibnamehash}{6a77130bfcc67867169364b55eef989f}
-      \strng{authorbibnamehash}{6a77130bfcc67867169364b55eef989f}
-      \strng{authornamehash}{6a77130bfcc67867169364b55eef989f}
-      \strng{authorfullhash}{6a77130bfcc67867169364b55eef989f}
-      \strng{authorfullhashraw}{6a77130bfcc67867169364b55eef989f}
-      \field{sortinit}{4}
-      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{booktitle}{Proceedings of the International Conference on Computer Aided Verification (CAV)}
-      \field{title}{Engineering an Efficient Probabilistic Exact Model Counter}
-      \field{year}{2025}
-    \endentry
-    \entry{SRSM19}{inproceedings}{}{}
-      \name{author}{4}{}{%
-        {{hash=2ebc97c1eab4d7f7cc603b0a80ad4c33}{%
-           family={Sharma},
-           familyi={S\bibinitperiod},
-           given={Shubham},
-           giveni={S\bibinitperiod}}}%
-        {{hash=aeb2442c2b7335323edbb1ec1080ba0f}{%
-           family={Roy},
-           familyi={R\bibinitperiod},
-           given={Subhajit},
-           giveni={S\bibinitperiod}}}%
-        {{hash=781b1be02fd03c3b0bb119184634c537}{%
-           family={Soos},
-           familyi={S\bibinitperiod},
-           given={Mate},
-           giveni={M\bibinitperiod}}}%
-        {{hash=5c4fa3acb9479a07274e24a36eb9feef}{%
-           family={Meel},
-           familyi={M\bibinitperiod},
-           given={Kuldeep\bibnamedelima S.},
-           giveni={K\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
-      }
-      \strng{namehash}{cd5ebb29056cfd0aeaae900de0ffd14b}
-      \strng{fullhash}{a553670ec1697462138f65e7f48ece22}
-      \strng{fullhashraw}{a553670ec1697462138f65e7f48ece22}
-      \strng{bibnamehash}{cd5ebb29056cfd0aeaae900de0ffd14b}
-      \strng{authorbibnamehash}{cd5ebb29056cfd0aeaae900de0ffd14b}
-      \strng{authornamehash}{cd5ebb29056cfd0aeaae900de0ffd14b}
-      \strng{authorfullhash}{a553670ec1697462138f65e7f48ece22}
-      \strng{authorfullhashraw}{a553670ec1697462138f65e7f48ece22}
-      \field{sortinit}{5}
-      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{booktitle}{Proceedings of International Joint Conference on Artificial Intelligence (IJCAI)}
-      \field{title}{GANAK: A Scalable Probabilistic Exact Model Counter}
-      \field{year}{2019}
-    \endentry
     \entry{BiereFallerFazekasFleuryFroleyks-CAV24}{inproceedings}{}{}
       \name{author}{6}{}{%
         {{hash=22081d00e30965a89f413e528510617e}{%
@@ -269,8 +79,8 @@
       \strng{editornamehash}{ece130ee3745c7b498207e44312cfc9a}
       \strng{editorfullhash}{ece130ee3745c7b498207e44312cfc9a}
       \strng{editorfullhashraw}{ece130ee3745c7b498207e44312cfc9a}
-      \field{sortinit}{6}
-      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{booktitle}{Computer Aided Verification - 36th International Conference, {CAV} 2024, Montreal, QC, Canada, July 24-27, 2024, Proceedings, Part {I}}
@@ -282,6 +92,496 @@
       \range{pages}{20}
       \verb{doi}
       \verb 10.1007/978-3-031-65627-9\_7
+      \endverb
+    \endentry
+    \entry{chrono-sat}{thesis}{}{}
+      \name{author}{1}{}{%
+        {{hash=d15663e8e3ca842a5c8eaa5f548802c1}{%
+           family={Coutelier},
+           familyi={C\bibinitperiod},
+           given={Robin},
+           giveni={R\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Université de Liège}%
+      }
+      \list{location}{1}{%
+        {Liège, Belgique}%
+      }
+      \strng{namehash}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{fullhash}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{fullhashraw}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{bibnamehash}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{authorbibnamehash}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{authornamehash}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{authorfullhash}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \strng{authorfullhashraw}{d15663e8e3ca842a5c8eaa5f548802c1}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{Unpublished master's thesis}
+      \field{title}{Chronological vs. non-chronological backtracking in satisfiability modulo theories}
+      \field{type}{mathesis}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://matheo.uliege.be/handle/2268.2/18041
+      \endverb
+      \verb{url}
+      \verb https://matheo.uliege.be/handle/2268.2/18041
+      \endverb
+    \endentry
+    \entry{count-sat-handbook}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=f6d4a9dc02404c0d2b814928bfcd9eb9}{%
+           family={Armin\bibnamedelima Biere},
+           familyi={A\bibinitperiod\bibinitdelim B\bibinitperiod},
+           given={Hans\bibnamedelimb van\bibnamedelima Maaren},
+           giveni={H\bibinitperiod\bibinitdelim v\bibinitperiod\bibinitdelim M\bibinitperiod},
+           suffix={Marijn\bibnamedelima Heule},
+           suffixi={M\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+        {{hash=2c6525d6659c865a8b2aef1472a790de}{%
+           family={Walsch},
+           familyi={W\bibinitperiod},
+           given={Toby},
+           giveni={T\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {IOS Press}%
+      }
+      \strng{namehash}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{fullhash}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{fullhashraw}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{bibnamehash}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{authorbibnamehash}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{authornamehash}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{authorfullhash}{ad458b9d05ebcf414061f8a5915da16b}
+      \strng{authorfullhashraw}{ad458b9d05ebcf414061f8a5915da16b}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Handbook of Satisfiability}
+      \field{year}{2008}
+      \verb{urlraw}
+      \verb https://www.cs.cornell.edu/~sabhar/chapters/ModelCounting-SAT-Handbook-prelim.pdf
+      \endverb
+      \verb{url}
+      \verb https://www.cs.cornell.edu/~sabhar/chapters/ModelCounting-SAT-Handbook-prelim.pdf
+      \endverb
+    \endentry
+    \entry{KR2025-65}{inproceedings}{}{}
+      \name{author}{3}{}{%
+        {{hash=739869603dbadbb19c8395f1957c9f61}{%
+           family={Xu},
+           familyi={X\bibinitperiod},
+           given={Zhenghang},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=a3dac84ba2cc18db09cc5a0c38614c7c}{%
+           family={Yin},
+           familyi={Y\bibinitperiod},
+           given={Minghao},
+           giveni={M\bibinitperiod}}}%
+        {{hash=b6d73d9e55398618ca357f9c210917ab}{%
+           family={Lagniez},
+           familyi={L\bibinitperiod},
+           given={Jean\bibnamedelima Marie},
+           giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \strng{namehash}{05ad1b08c6984addda64448f78ea605c}
+      \strng{fullhash}{05ad1b08c6984addda64448f78ea605c}
+      \strng{fullhashraw}{05ad1b08c6984addda64448f78ea605c}
+      \strng{bibnamehash}{05ad1b08c6984addda64448f78ea605c}
+      \strng{authorbibnamehash}{05ad1b08c6984addda64448f78ea605c}
+      \strng{authornamehash}{05ad1b08c6984addda64448f78ea605c}
+      \strng{authorfullhash}{05ad1b08c6984addda64448f78ea605c}
+      \strng{authorfullhashraw}{05ad1b08c6984addda64448f78ea605c}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{{Proceedings of the 22nd International Conference on Principles of Knowledge Representation and Reasoning}}
+      \field{month}{10}
+      \field{title}{{An Embarrassingly Parallel Model Counter}}
+      \field{year}{2025}
+      \field{pages}{670\bibrangedash 681}
+      \range{pages}{12}
+      \verb{doi}
+      \verb 10.24963/kr.2025/65
+      \endverb
+      \verb{urlraw}
+      \verb https://doi.org/10.24963/kr.2025/65
+      \endverb
+      \verb{url}
+      \verb https://doi.org/10.24963/kr.2025/65
+      \endverb
+    \endentry
+    \entry{cube-conquer}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{hash=adbf24c301850e2a04b396044f205f4d}{%
+           family={Heule},
+           familyi={H\bibinitperiod},
+           given={Marijn},
+           giveni={M\bibinitperiod}}}%
+        {{hash=6a705d4f81bf4de9b4a9f22d64544ab7}{%
+           family={Kullmann},
+           familyi={K\bibinitperiod},
+           given={Oliver},
+           giveni={O\bibinitperiod}}}%
+        {{hash=edfe271101f75541cf3c6fadb3a01bee}{%
+           family={Wieringa},
+           familyi={W\bibinitperiod},
+           given={Siert},
+           giveni={S\bibinitperiod}}}%
+        {{hash=22081d00e30965a89f413e528510617e}{%
+           family={Biere},
+           familyi={B\bibinitperiod},
+           given={Armin},
+           giveni={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{88ba2ab959b5e0b331306b94139bde9d}
+      \strng{fullhash}{254cd5dc78de358170bc486f3b1245b2}
+      \strng{fullhashraw}{254cd5dc78de358170bc486f3b1245b2}
+      \strng{bibnamehash}{88ba2ab959b5e0b331306b94139bde9d}
+      \strng{authorbibnamehash}{88ba2ab959b5e0b331306b94139bde9d}
+      \strng{authornamehash}{88ba2ab959b5e0b331306b94139bde9d}
+      \strng{authorfullhash}{254cd5dc78de358170bc486f3b1245b2}
+      \strng{authorfullhashraw}{254cd5dc78de358170bc486f3b1245b2}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{isbn}{978-3-642-34187-8}
+      \field{month}{12}
+      \field{title}{Cube and conquer: guiding CDCL SAT solvers by lookaheads}
+      \field{volume}{7261}
+      \field{year}{2011}
+      \field{pages}{50\bibrangedash 65}
+      \range{pages}{16}
+      \verb{doi}
+      \verb 10.1007/978-3-642-34188-5_8
+      \endverb
+    \endentry
+    \entry{SM2025}{inproceedings}{}{}
+      \name{author}{2}{}{%
+        {{hash=781b1be02fd03c3b0bb119184634c537}{%
+           family={Soos},
+           familyi={S\bibinitperiod},
+           given={Mate},
+           giveni={M\bibinitperiod}}}%
+        {{hash=5c4fa3acb9479a07274e24a36eb9feef}{%
+           family={Meel},
+           familyi={M\bibinitperiod},
+           given={Kuldeep\bibnamedelima S.},
+           giveni={K\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+      }
+      \strng{namehash}{6a77130bfcc67867169364b55eef989f}
+      \strng{fullhash}{6a77130bfcc67867169364b55eef989f}
+      \strng{fullhashraw}{6a77130bfcc67867169364b55eef989f}
+      \strng{bibnamehash}{6a77130bfcc67867169364b55eef989f}
+      \strng{authorbibnamehash}{6a77130bfcc67867169364b55eef989f}
+      \strng{authornamehash}{6a77130bfcc67867169364b55eef989f}
+      \strng{authorfullhash}{6a77130bfcc67867169364b55eef989f}
+      \strng{authorfullhashraw}{6a77130bfcc67867169364b55eef989f}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the International Conference on Computer Aided Verification (CAV)}
+      \field{title}{Engineering an Efficient Probabilistic Exact Model Counter}
+      \field{year}{2025}
+    \endentry
+    \entry{SRSM19}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{hash=2ebc97c1eab4d7f7cc603b0a80ad4c33}{%
+           family={Sharma},
+           familyi={S\bibinitperiod},
+           given={Shubham},
+           giveni={S\bibinitperiod}}}%
+        {{hash=aeb2442c2b7335323edbb1ec1080ba0f}{%
+           family={Roy},
+           familyi={R\bibinitperiod},
+           given={Subhajit},
+           giveni={S\bibinitperiod}}}%
+        {{hash=781b1be02fd03c3b0bb119184634c537}{%
+           family={Soos},
+           familyi={S\bibinitperiod},
+           given={Mate},
+           giveni={M\bibinitperiod}}}%
+        {{hash=5c4fa3acb9479a07274e24a36eb9feef}{%
+           family={Meel},
+           familyi={M\bibinitperiod},
+           given={Kuldeep\bibnamedelima S.},
+           giveni={K\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+      }
+      \strng{namehash}{cd5ebb29056cfd0aeaae900de0ffd14b}
+      \strng{fullhash}{a553670ec1697462138f65e7f48ece22}
+      \strng{fullhashraw}{a553670ec1697462138f65e7f48ece22}
+      \strng{bibnamehash}{cd5ebb29056cfd0aeaae900de0ffd14b}
+      \strng{authorbibnamehash}{cd5ebb29056cfd0aeaae900de0ffd14b}
+      \strng{authornamehash}{cd5ebb29056cfd0aeaae900de0ffd14b}
+      \strng{authorfullhash}{a553670ec1697462138f65e7f48ece22}
+      \strng{authorfullhashraw}{a553670ec1697462138f65e7f48ece22}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of International Joint Conference on Artificial Intelligence (IJCAI)}
+      \field{title}{GANAK: A Scalable Probabilistic Exact Model Counter}
+      \field{year}{2019}
+    \endentry
+    \entry{sat-dimacs}{misc}{}{}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://web.archive.org/web/20190325181937/https://www.satcompetition.org/2009/format-benchmarks2009.html}}
+      \field{note}{Accessed: 202X-XX-XX}
+      \field{title}{SAT Competition 2009: Benchmark Submission Guidelines}
+      \field{year}{2009}
+    \endentry
+    \entry{dnnf}{inproceedings}{}{}
+      \name{author}{2}{}{%
+        {{hash=d685c063ba1cad73ae30d7e9ee866858}{%
+           family={Oztok},
+           familyi={O\bibinitperiod},
+           given={Umut},
+           giveni={U\bibinitperiod}}}%
+        {{hash=9c3c93fa904c46230878dfcdd5bb2a70}{%
+           family={Darwiche},
+           familyi={D\bibinitperiod},
+           given={Adnan},
+           giveni={A\bibinitperiod}}}%
+      }
+      \name{editor}{1}{}{%
+        {{hash=6db0197da59880e9eb25431d7cd3b7f4}{%
+           family={O'Sullivan},
+           familyi={O\bibinitperiod},
+           given={Barry},
+           giveni={B\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Cham}%
+      }
+      \list{publisher}{1}{%
+        {Springer International Publishing}%
+      }
+      \strng{namehash}{643eea296b32e5ed7f72c72b00d45d68}
+      \strng{fullhash}{643eea296b32e5ed7f72c72b00d45d68}
+      \strng{fullhashraw}{643eea296b32e5ed7f72c72b00d45d68}
+      \strng{bibnamehash}{643eea296b32e5ed7f72c72b00d45d68}
+      \strng{authorbibnamehash}{643eea296b32e5ed7f72c72b00d45d68}
+      \strng{authornamehash}{643eea296b32e5ed7f72c72b00d45d68}
+      \strng{authorfullhash}{643eea296b32e5ed7f72c72b00d45d68}
+      \strng{authorfullhashraw}{643eea296b32e5ed7f72c72b00d45d68}
+      \strng{editorbibnamehash}{6db0197da59880e9eb25431d7cd3b7f4}
+      \strng{editornamehash}{6db0197da59880e9eb25431d7cd3b7f4}
+      \strng{editorfullhash}{6db0197da59880e9eb25431d7cd3b7f4}
+      \strng{editorfullhashraw}{6db0197da59880e9eb25431d7cd3b7f4}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Decision-DNNF is a strict subset of decomposable negation normal form (DNNF) that plays a key role in analyzing the complexity of model counters (the searches performed by these counters have their traces in Decision-DNNF). This paper presents a number of results on Decision-DNNF. First, we introduce a new notion of CNF width and provide an algorithm that compiles CNFs into Decision-DNNFs in time and space that are exponential only in this width. The new width strictly dominates the treewidth of the CNF primal graph: it is no greater and can be bounded when the treewidth of the primal graph is unbounded. This new result leads to a tighter bound on the complexity of model counting. Second, we show that the output of the algorithm can be converted in linear time to a sentential decision diagram (SDD), which leads to a tighter bound on the complexity of compiling CNFs into SDDs.}
+      \field{booktitle}{Principles and Practice of Constraint Programming}
+      \field{isbn}{978-3-319-10428-7}
+      \field{title}{On Compiling CNF into Decision-DNNF}
+      \field{year}{2014}
+      \field{pages}{42\bibrangedash 57}
+      \range{pages}{16}
+    \endentry
+    \entry{approxMC}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=d00eeab19cac58b992129dc7d504efb4}{%
+           family={Pote},
+           familyi={P\bibinitperiod},
+           given={Yash},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=5c4fa3acb9479a07274e24a36eb9feef}{%
+           family={Meel},
+           familyi={M\bibinitperiod},
+           given={Kuldeep\bibnamedelima S.},
+           giveni={K\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=df7964e44c59618d377ea26520d99168}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={Jiong},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{068fc86593d290e46172368fab6ec537}
+      \strng{fullhash}{068fc86593d290e46172368fab6ec537}
+      \strng{fullhashraw}{068fc86593d290e46172368fab6ec537}
+      \strng{bibnamehash}{068fc86593d290e46172368fab6ec537}
+      \strng{authorbibnamehash}{068fc86593d290e46172368fab6ec537}
+      \strng{authornamehash}{068fc86593d290e46172368fab6ec537}
+      \strng{authorfullhash}{068fc86593d290e46172368fab6ec537}
+      \strng{authorfullhashraw}{068fc86593d290e46172368fab6ec537}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Proceedings of the AAAI Conference on Artificial Intelligence}
+      \field{month}{4}
+      \field{number}{11}
+      \field{title}{Towards Real-Time Approximate Counting}
+      \field{volume}{39}
+      \field{year}{2025}
+      \field{pages}{11318\bibrangedash 11326}
+      \range{pages}{9}
+      \verb{doi}
+      \verb 10.1609/aaai.v39i11.33231
+      \endverb
+      \verb{urlraw}
+      \verb https://ojs.aaai.org/index.php/AAAI/article/view/33231
+      \endverb
+      \verb{url}
+      \verb https://ojs.aaai.org/index.php/AAAI/article/view/33231
+      \endverb
+    \endentry
+    \entry{sharpSAT}{inproceedings}{}{}
+      \name{author}{1}{}{%
+        {{hash=128f9757c2ae944fa7faac7649649d99}{%
+           family={Thurley},
+           familyi={T\bibinitperiod},
+           given={Marc},
+           giveni={M\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Seattle, WA}%
+      }
+      \list{publisher}{1}{%
+        {Springer-Verlag}%
+      }
+      \strng{namehash}{128f9757c2ae944fa7faac7649649d99}
+      \strng{fullhash}{128f9757c2ae944fa7faac7649649d99}
+      \strng{fullhashraw}{128f9757c2ae944fa7faac7649649d99}
+      \strng{bibnamehash}{128f9757c2ae944fa7faac7649649d99}
+      \strng{authorbibnamehash}{128f9757c2ae944fa7faac7649649d99}
+      \strng{authornamehash}{128f9757c2ae944fa7faac7649649d99}
+      \strng{authorfullhash}{128f9757c2ae944fa7faac7649649d99}
+      \strng{authorfullhashraw}{128f9757c2ae944fa7faac7649649d99}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{We introduce sharpSAT, a new \#SAT solver that is based on the well known DPLL algorithm and techniques from SAT and \#SAT solvers. Most importantly, we introduce an entirely new approach of coding components, which reduces the cache size by at least one order of magnitude, and a new cache management scheme. Furthermore, we apply a well known look ahead based on BCP in a manner that is well suited for \#SAT solving. We show that these techniques are highly beneficial, especially on large structured instances, such that our solver performs significantly better than other \#SAT solvers.}
+      \field{booktitle}{Proceedings of the 9th International Conference on Theory and Applications of Satisfiability Testing}
+      \field{isbn}{3540372067}
+      \field{series}{SAT'06}
+      \field{title}{sharpSAT: counting models with advanced component caching and implicit BCP}
+      \field{year}{2006}
+      \field{pages}{424\bibrangedash 429}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.1007/11814948_38
+      \endverb
+      \verb{urlraw}
+      \verb https://doi.org/10.1007/11814948_38
+      \endverb
+      \verb{url}
+      \verb https://doi.org/10.1007/11814948_38
+      \endverb
+    \endentry
+    \entry{sharpSAT-TD}{misc}{}{}
+      \name{author}{2}{}{%
+        {{hash=b77e3894003b696764cdde8a5eadd554}{%
+           family={Korhonen},
+           familyi={K\bibinitperiod},
+           given={Tuukka},
+           giveni={T\bibinitperiod}}}%
+        {{hash=69144522e80cc3f0d70e7014afbfc072}{%
+           family={Järvisalo},
+           familyi={J\bibinitperiod},
+           given={Matti},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{fullhash}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{fullhashraw}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{bibnamehash}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{authorbibnamehash}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{authornamehash}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{authorfullhash}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{authorfullhashraw}{cf29279e458f74a5673d11cce0297eb3}
+      \field{extraname}{1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.AI}
+      \field{eprinttype}{arXiv}
+      \field{title}{SharpSAT-TD in Model Counting Competitions 2021-2023}
+      \field{year}{2023}
+      \verb{eprint}
+      \verb 2308.15819
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2308.15819
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2308.15819
+      \endverb
+    \endentry
+    \entry{tree-decomp}{inproceedings}{}{}
+      \name{author}{2}{}{%
+        {{hash=b77e3894003b696764cdde8a5eadd554}{%
+           family={Korhonen},
+           familyi={K\bibinitperiod},
+           given={Tuukka},
+           giveni={T\bibinitperiod}}}%
+        {{hash=69144522e80cc3f0d70e7014afbfc072}{%
+           family={Järvisalo},
+           familyi={J\bibinitperiod},
+           given={Matti},
+           giveni={M\bibinitperiod}}}%
+      }
+      \name{editor}{1}{}{%
+        {{hash=1a711dab4262e3bd7f295cd504fdf074}{%
+           family={Michel},
+           familyi={M\bibinitperiod},
+           given={Laurent\bibnamedelima D.},
+           giveni={L\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Dagstuhl, Germany}%
+      }
+      \list{publisher}{1}{%
+        {Schloss Dagstuhl -- Leibniz-Zentrum für Informatik}%
+      }
+      \strng{namehash}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{fullhash}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{fullhashraw}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{bibnamehash}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{authorbibnamehash}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{authornamehash}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{authorfullhash}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{authorfullhashraw}{cf29279e458f74a5673d11cce0297eb3}
+      \strng{editorbibnamehash}{1a711dab4262e3bd7f295cd504fdf074}
+      \strng{editornamehash}{1a711dab4262e3bd7f295cd504fdf074}
+      \strng{editorfullhash}{1a711dab4262e3bd7f295cd504fdf074}
+      \strng{editorfullhashraw}{1a711dab4262e3bd7f295cd504fdf074}
+      \field{extraname}{2}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{annotation}{Keywords: propositional model counting, decision heuristics, tree decompositions, empirical evaluation}
+      \field{booktitle}{27th International Conference on Principles and Practice of Constraint Programming (CP 2021)}
+      \field{isbn}{978-3-95977-211-2}
+      \field{issn}{1868-8969}
+      \field{series}{Leibniz International Proceedings in Informatics (LIPIcs)}
+      \field{title}{{Integrating Tree Decompositions into Decision Heuristics of Propositional Model Counters}}
+      \field{volume}{210}
+      \field{year}{2021}
+      \field{pages}{8:1\bibrangedash 8:11}
+      \range{pages}{-1}
+      \verb{doi}
+      \verb 10.4230/LIPIcs.CP.2021.8
+      \endverb
+      \verb{urlraw}
+      \verb https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.CP.2021.8
+      \endverb
+      \verb{url}
+      \verb https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.CP.2021.8
       \endverb
     \endentry
   \enddatalist

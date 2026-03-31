@@ -60,3 +60,94 @@
   year         = {2024},
   doi          = {10.1007/978-3-031-65627-9\_7},
 }
+
+@inproceedings{cube-conquer,
+    author = {Heule, Marijn and Kullmann, Oliver and Wieringa, Siert and Biere, Armin},
+    year = {2011},
+    month = {12},
+    pages = {50-65},
+    title = {Cube and conquer: guiding CDCL SAT solvers by lookaheads},
+    volume = {7261},
+    isbn = {978-3-642-34187-8},
+    doi = {10.1007/978-3-642-34188-5_8}
+}
+
+@misc{sat-dimacs,
+  title        = {SAT Competition 2009: Benchmark Submission Guidelines},
+  howpublished = {\url{https://web.archive.org/web/20190325181937/https://www.satcompetition.org/2009/format-benchmarks2009.html}},
+  note         = {Accessed: 202X-XX-XX},
+  year         = {2009}
+}
+
+@article{approxMC, 
+    title={Towards Real-Time Approximate Counting}, 
+    volume={39}, 
+    url={https://ojs.aaai.org/index.php/AAAI/article/view/33231}, 
+    DOI={10.1609/aaai.v39i11.33231}, 
+number={11}, 
+journal={Proceedings of the AAAI Conference on Artificial Intelligence}, 
+author={Pote, Yash and Meel, Kuldeep S. and Yang, Jiong}, 
+year={2025}, 
+month={Apr.}, 
+pages={11318-11326} }
+
+@misc{sharpSAT-TD,
+      title={SharpSAT-TD in Model Counting Competitions 2021-2023}, 
+      author={Tuukka Korhonen and Matti Järvisalo},
+      year={2023},
+      eprint={2308.15819},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2308.15819}, 
+}
+
+@InProceedings{tree-decomp,
+  author =	{Korhonen, Tuukka and J\"{a}rvisalo, Matti},
+  title =	{{Integrating Tree Decompositions into Decision Heuristics of Propositional Model Counters}},
+  booktitle =	{27th International Conference on Principles and Practice of Constraint Programming (CP 2021)},
+  pages =	{8:1--8:11},
+  series =	{Leibniz International Proceedings in Informatics (LIPIcs)},
+  ISBN =	{978-3-95977-211-2},
+  ISSN =	{1868-8969},
+  year =	{2021},
+  volume =	{210},
+  editor =	{Michel, Laurent D.},
+  publisher =	{Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  address =	{Dagstuhl, Germany},
+  URL =		{https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.CP.2021.8},
+  URN =		{urn:nbn:de:0030-drops-152992},
+  doi =		{10.4230/LIPIcs.CP.2021.8},
+  annote =	{Keywords: propositional model counting, decision heuristics, tree decompositions, empirical evaluation}
+}
+
+@inproceedings{sharpSAT,
+author = {Thurley, Marc},
+title = {sharpSAT: counting models with advanced component caching and implicit BCP},
+year = {2006},
+isbn = {3540372067},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+url = {https://doi.org/10.1007/11814948_38},
+doi = {10.1007/11814948_38},
+abstract = {We introduce sharpSAT, a new \#SAT solver that is based on the well known DPLL algorithm and techniques from SAT and \#SAT solvers. Most importantly, we introduce an entirely new approach of coding components, which reduces the cache size by at least one order of magnitude, and a new cache management scheme. Furthermore, we apply a well known look ahead based on BCP in a manner that is well suited for \#SAT solving. We show that these techniques are highly beneficial, especially on large structured instances, such that our solver performs significantly better than other \#SAT solvers.},
+booktitle = {Proceedings of the 9th International Conference on Theory and Applications of Satisfiability Testing},
+pages = {424–429},
+numpages = {6},
+location = {Seattle, WA},
+series = {SAT'06}
+}
+
+
+@InProceedings{dnnf,
+author="Oztok, Umut
+and Darwiche, Adnan",
+editor="O'Sullivan, Barry",
+title="On Compiling CNF into Decision-DNNF",
+booktitle="Principles and Practice of Constraint Programming",
+year="2014",
+publisher="Springer International Publishing",
+address="Cham",
+pages="42--57",
+abstract="Decision-DNNF is a strict subset of decomposable negation normal form (DNNF) that plays a key role in analyzing the complexity of model counters (the searches performed by these counters have their traces in Decision-DNNF). This paper presents a number of results on Decision-DNNF. First, we introduce a new notion of CNF width and provide an algorithm that compiles CNFs into Decision-DNNFs in time and space that are exponential only in this width. The new width strictly dominates the treewidth of the CNF primal graph: it is no greater and can be bounded when the treewidth of the primal graph is unbounded. This new result leads to a tighter bound on the complexity of model counting. Second, we show that the output of the algorithm can be converted in linear time to a sentential decision diagram (SDD), which leads to a tighter bound on the complexity of compiling CNFs into SDDs.",
+isbn="978-3-319-10428-7"
+}
