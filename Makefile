@@ -167,6 +167,37 @@ test: master tui
 	@echo "[Hydra] Test CNF created at test-data/test.cnf"
 	@echo "[Hydra] Run: make run-master FILE=test-data/test.cnf"
 
+# --- Benchmark Targets ---
+
+# Full N-worker benchmark suite (workers must already be running).
+# Runs all CNF instances at each worker tier and appends to results/benchmark.csv.
+# Example: make benchmark TIERS="1 4 8 16" TRIALS=2
+benchmark: master
+	@echo "[Hydra] Starting benchmark suite (workers must already be connected)..."
+	@echo "        Tiers: $(TIERS)   Trials/tier: $(TRIALS)"
+	@chmod +x benchmark.sh
+	TIERS="$(TIERS)" TRIALS="$(TRIALS)" PORT=$(PORT) MASTER_BIN=$(MASTER_BIN) ./benchmark.sh
+
+TIERS  ?= 1 4 8 16
+TRIALS ?= 1
+
+# Raw ganak baseline (no framework, sequential).
+# Appends rows with benchmark_label=baseline_ganak to the same CSV.
+benchmark-ganak:
+	@echo "[Hydra] Running raw ganak baseline..."
+	@chmod +x benchmark_ganak.sh
+	./benchmark_ganak.sh cnf_instances results/benchmark.csv
+
+# Post-process results: console table + summary.csv + table.tex
+analyze:
+	@echo "[Hydra] Analyzing benchmark results..."
+	@test -f results/benchmark.csv || (echo "ERROR: results/benchmark.csv not found — run make benchmark first" && exit 1)
+	python3 analyze_benchmark.py results/benchmark.csv
+
+# All-in-one: baseline + framework benchmark + analysis
+benchmark-all: benchmark-ganak benchmark analyze
+	@echo "[Hydra] ✓ Full benchmark complete. See results/"
+
 # --- Cleanup ---
 
 down:
@@ -228,6 +259,14 @@ help:
 	@echo "║    Terminal 1: make run-master FILE=problem.cnf                ║"
 	@echo "║    Terminal 2: make noroot-worker-up CORES=4                   ║"
 	@echo "║    Terminal 3: make run-tui                                    ║"
+	@echo "╠════════════════════════════════════════════════════════════════╣"
+	@echo "║                   BENCHMARK TARGETS                            ║"
+	@echo "╠════════════════════════════════════════════════════════════════╣"
+	@echo "║  benchmark      - N-worker suite (workers must be running)     ║"
+	@echo "║                   Usage: make benchmark TIERS='1 4 8 16'       ║"
+	@echo "║  benchmark-ganak- Raw sequential ganak baseline                ║"
+	@echo "║  analyze        - Post-process CSV → table.tex + summary.csv   ║"
+	@echo "║  benchmark-all  - baseline + benchmark + analyze in one shot   ║"
 	@echo "╠════════════════════════════════════════════════════════════════╣"
 	@echo "║                   DEVELOPMENT TARGETS                          ║"
 	@echo "╠════════════════════════════════════════════════════════════════╣"

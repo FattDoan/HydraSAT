@@ -120,3 +120,44 @@ func SplitCube(cube []int32) [][]int32 {
 		append(append([]int32{}, cube...), -next),
 	}
 }
+
+// More effective but simpler branching heuristic
+// split on variables most appearing in the original formula, ignoring those already in the cube.
+func SplitCubeSmart(cube []int32, clauses [][]int32) [][]int32 {
+	var freq [1000000]int
+	for _, clause := range clauses {
+		for _, lit := range clause {
+			var v int32
+			if lit < 0 {
+				v = -lit
+			} else {
+				v = lit
+			}
+			freq[v]++
+		}
+	}
+
+	var maxVar int32
+	for _, lit := range cube {
+		if lit < 0 {
+			lit = -lit
+		}
+		if lit > maxVar {
+			maxVar = lit
+		}
+	}
+
+	var bestVar int32
+	var bestFreq int
+	for v, f := range freq {
+		if int32(v) > maxVar && f > bestFreq {
+			bestVar = int32(v)
+			bestFreq = f
+		}
+	}
+
+	return [][]int32{
+		append(append([]int32{}, cube...), bestVar),
+		append(append([]int32{}, cube...), -bestVar),
+	}
+}

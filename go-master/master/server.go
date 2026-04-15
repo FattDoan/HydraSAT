@@ -66,6 +66,18 @@ func (s *MasterServer) GetTotalCount() *big.Int {
 // GetTask is called by a worker that is ready for work.
 func (s *MasterServer) GetTask(ctx context.Context, req *pb.WorkerIdentity) (*pb.TaskPayload, error) {
 	s.workerTracker.RegisterWorker(req.WorkerId, req.Hostname)
+	
+	// ── MaxWorkers enforcement ────────────────────────────────────────────────
+	// If a concurrency cap is configured, only hand out a task when fewer than
+	// maxWorkers workers are currently busy. Workers that get -1 will sleep 2 s
+	// and retry — no coordination between VMs is needed.
+	if s.cfg.MaxWorkers > 0 {
+		if int(s.workerTracker.BusyWorkerCount()) >= s.cfg.MaxWorkers {
+			return &pb.TaskPayload{TaskId: -1}, nil
+		}
+	}
+
+
 	fmt.Printf("Worker [%s@%s] requested a task\n", req.WorkerId, req.Hostname)
 
 	select {
@@ -102,7 +114,9 @@ func (s *MasterServer) SubmitResult(ctx context.Context, req *pb.TaskResult) (*p
 	if req.TimedOut {
 		fmt.Printf("Worker %s@%s TIMEOUT on task %d: cube=%v — splitting\n",
 			req.WorkerId, hostname, req.TaskId, cube)
-		newCubes := SplitCube(cube)
+		//newCubes := SplitCube(cube)
+		newCubes := SplitCubeSmart(cube, s.taskManager.cnfData.Clauses)
+		
 		atomic.AddInt32(&s.totalTasks, int32(len(newCubes)))
 		s.taskManager.EnqueueCubes(newCubes)
 	} else {

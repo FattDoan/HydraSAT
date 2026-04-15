@@ -6,70 +6,105 @@ import (
 	"os"
 )
 
-// HeuristicConfig is the canonical representation of heuristic.json.
-// All master subsystems receive a pointer to this struct so new knobs
-// only need to be added in one place.
+// HeuristicConfig is the in-memory representation of heuristic.json.
+// Fields missing from the JSON file keep their default values.
+//
+// Two fields can also be overridden at runtime via environment variables,
+// which is how benchmark.sh drives successive trials without editing JSON:
+//
+//	BENCHMARK_LABEL=4w   MAX_WORKERS=4   ./bin/master_bin
 type HeuristicConfig struct {
-	// DynamicTimeout: when true the per-task timeout is derived from the
-	// running average of completed task durations times TimeoutMultiplier.
-	// When false (or before any task finishes) InitialTimeoutSec is used.
-	// InitialTimeoutSec == 0 means "no timeout" until the average is known.
+	// ── Timeout ──────────────────────────────────────────────────────────────
+	// DynamicTimeout enables adaptive per-task timeouts.
+	//   false → every task gets InitialTimeoutSec (0 = no timeout).
+	//   true  → first task runs with no timeout; after the first completion
+	//            timeout = rollingAvg * TimeoutMultiplier.
 	DynamicTimeout    bool    `json:"dynamicTimeout"`
-	InitialTimeoutSec float64 `json:"initialTimeoutSec"`
 	TimeoutMultiplier float64 `json:"timeoutMultiplier"`
+	InitialTimeoutSec int32   `json:"initialTimeoutSec"`
 
-	// ReadFolder: when true the master scans InputFolder for *.cnf files
-	// and enqueues them all as separate solve jobs instead of reading a
-	// single file from the CLI argument.
+	// ── Input ─────────────────────────────────────────────────────────────────
 	ReadFolder  bool   `json:"readFolder"`
 	InputFolder string `json:"inputFolder"`
 
-	// OutputLog is the path of the CSV file where per-problem results are
-	// appended when a solve finishes.
+	// ── Output ────────────────────────────────────────────────────────────────
 	OutputLog string `json:"outputLog"`
+
+	// ── Benchmarking ─────────────────────────────────────────────────────────
+	// MaxWorkers limits how many workers may hold an active task simultaneously.
+	// 0 means no limit (use every connected worker).
+	// This lets you connect all workers once and vary the active count per trial
+	// by just restarting the master — no worker-side changes needed.
+	MaxWorkers int `json:"maxWorkers"`
+
+	// BenchmarkLabel is a short tag written into every CSV row for this run,
+	// e.g. "4w_trial1". Override with the BENCHMARK_LABEL env var so benchmark.sh
+	// can drive multiple trials without touching the JSON file.
+	BenchmarkLabel string `json:"benchmarkLabel"`
 }
 
-// DefaultHeuristicConfig returns safe defaults so the master works even
-// without a heuristic.json file (mirrors the old hard-coded behaviour).
-func DefaultHeuristicConfig() *HeuristicConfig {
-	return &HeuristicConfig{
+func defaultConfig() HeuristicConfig {
+	return HeuristicConfig{
 		DynamicTimeout:    false,
-		InitialTimeoutSec: 30,
 		TimeoutMultiplier: 2.0,
+		InitialTimeoutSec: 30,
 		ReadFolder:        false,
-		InputFolder:       "./cnf-input",
-		OutputLog:         "./results/hydrasat_results.csv",
+		InputFolder:       "cnf_instances",
+		OutputLog:         "results/benchmark.csv",
+		MaxWorkers:        0,
+		BenchmarkLabel:    "",
 	}
 }
 
-// LoadHeuristicConfig reads heuristic.json from the given path.
-// Missing file → defaults; parse error → error.
+// LoadHeuristicConfig reads path and merges it on top of defaults.
+// If the file does not exist, defaults are returned without error.
+// After loading, environment variables MAX_WORKERS and BENCHMARK_LABEL
+// override their JSON counterparts if set.
 func LoadHeuristicConfig(path string) (*HeuristicConfig, error) {
-	cfg := DefaultHeuristicConfig()
+	cfg := defaultConfig()
 
 	data, err := os.ReadFile(path)
 	if os.IsNotExist(err) {
 		fmt.Printf("[config] %s not found — using defaults\n", path)
-		return cfg, nil
-	}
-	if err != nil {
+	} else if err != nil {
 		return nil, fmt.Errorf("reading %s: %w", path, err)
+	} else {
+		if err := json.Unmarshal(data, &cfg); err != nil {
+			return nil, fmt.Errorf("parsing %s: %w", path, err)
+		}
 	}
 
-	if err := json.Unmarshal(data, cfg); err != nil {
-		return nil, fmt.Errorf("parsing %s: %w", path, err)
+	// ── Environment variable overrides ────────────────────────────────────────
+	// These let benchmark.sh drive successive trials without editing JSON.
+	if v := os.Getenv("BENCHMARK_LABEL"); v != "" {
+		cfg.BenchmarkLabel = v
+	}
+	if v := os.Getenv("MAX_WORKERS"); v != "" {
+		var n int
+		if _, err := fmt.Sscanf(v, "%d", &n); err == nil {
+			cfg.MaxWorkers = n
+		}
 	}
 
-	// Sanity-check multiplier
-	if cfg.TimeoutMultiplier <= 0 {
-		cfg.TimeoutMultiplier = 2.0
+	printConfig(&cfg)
+	return &cfg, nil
+}
+
+func printConfig(cfg *HeuristicConfig) {
+	fmt.Println("[config] ──────────────────────────────────────")
+	fmt.Printf("[config]  dynamicTimeout    : %v\n", cfg.DynamicTimeout)
+	if cfg.DynamicTimeout {
+		fmt.Printf("[config]  timeoutMultiplier : %.2f×\n", cfg.TimeoutMultiplier)
+		fmt.Printf("[config]  initialTimeoutSec : %d (0=∞ until first completion)\n", cfg.InitialTimeoutSec)
+	} else {
+		fmt.Printf("[config]  initialTimeoutSec : %d\n", cfg.InitialTimeoutSec)
 	}
-
-	fmt.Printf("[config] Loaded %s\n", path)
-	fmt.Printf("  dynamicTimeout   = %v  (initial=%.0fs  multiplier=%.1fx)\n",
-		cfg.DynamicTimeout, cfg.InitialTimeoutSec, cfg.TimeoutMultiplier)
-	fmt.Printf("  readFolder       = %v  (%s)\n", cfg.ReadFolder, cfg.InputFolder)
-	fmt.Printf("  outputLog        = %s\n", cfg.OutputLog)
-
-	return cfg, nil
+	fmt.Printf("[config]  readFolder        : %v\n", cfg.ReadFolder)
+	if cfg.ReadFolder {
+		fmt.Printf("[config]  inputFolder       : %s\n", cfg.InputFolder)
+	}
+	fmt.Printf("[config]  outputLog         : %s\n", cfg.OutputLog)
+	fmt.Printf("[config]  maxWorkers        : %d (0=unlimited)\n", cfg.MaxWorkers)
+	fmt.Printf("[config]  benchmarkLabel    : %q\n", cfg.BenchmarkLabel)
+	fmt.Println("[config] ──────────────────────────────────────")
 }

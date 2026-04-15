@@ -1,8 +1,10 @@
 {
   "dynamicTimeout": true,
-  "initialTimeoutSec": 0,
   "timeoutMultiplier": 2,
-  "readFolder": false,
-  "inputFolder": "./cnf_eval/",
-  "outputLog": "./eval_results/results.csv"
+  "initialTimeoutSec": 0,
+  "readFolder": true,
+  "inputFolder": "cnf_instances",
+  "outputLog": "results/benchmark.csv",
+  "maxWorkers": 0,
+  "benchmarkLabel": ""
 }
