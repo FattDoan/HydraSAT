@@ -84,9 +84,9 @@ func (tt *TimeoutTracker) SampleCount() int64 {
 
 // staticTimeout converts the float seconds from config to int32.
 // 0 → math.MaxInt32 (no-timeout sentinel understood by the worker).
-func staticTimeout(sec float64) int32 {
+func staticTimeout(sec int32) int32 {
 	if sec <= 0 {
 		return math.MaxInt32
 	}
-	return int32(sec)
+	return sec
 }

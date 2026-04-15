@@ -31,8 +31,9 @@ type MasterServer struct {
 	done           chan struct{}
 	startTime      time.Time
 	completedTasks int32
-	totalTasks     int32 // incremented when cubes are enqueued
-
+	timedOutTasks  int32 // tasks that hit the timeout ceiling and were re-split
+	totalTasks     int32 // incremented on every EnqueueCubes call
+	
 	broadcaster *TimeoutBroadcaster
 }
 
@@ -232,9 +233,12 @@ func (s *MasterServer) Start(port string) error {
 		s.countMutex.Unlock()
 
 		s.resultLogger.LogResult(
+			s.cfg.BenchmarkLabel,
+			s.cfg.MaxWorkers,
 			s.cnfFile,
 			count,
 			atomic.LoadInt32(&s.completedTasks),
+			atomic.LoadInt32(&s.timedOutTasks),
 			atomic.LoadInt32(&s.totalTasks),
 			wallTime,
 			s.timeoutTracker.AvgTaskSec(),
