@@ -1,0 +1,2 @@
+timestamp,benchmark_label,worker_limit,cnf_file,model_count,completed_tasks,timed_out_tasks,total_tasks,wall_time_sec,avg_task_sec,final_timeout_sec,workers
+2026-04-15T23:25:37Z,4w_trial1,4,cnf_instances/rand3sat_100v_300c.cnf,383334538780,64,0,64,45.165,2.514,6,8

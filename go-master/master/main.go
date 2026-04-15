@@ -78,10 +78,10 @@ func main() {
 			{-1, 2, 3}, {-1, 2, -3}, {-1, -2, 3}, {-1, -2, -3},
 		} */
 		// using SplitCubeSmart to generate initial cubes based on the formula's clauses
-		// do it 4 times to get 2^4 = 16 initial cubes, 
+		// do it 4 times to get 2^6 = 64 initial cubes, 
 		// which is a reasonable starting point for parallelism without overwhelming the queue
 		initialCubes := [][]int32{{}} // start with the empty cube
-		for i := 0; i < 4; i++ {
+		for i := 0; i < 6; i++ {
 			var newCubes [][]int32
 			for _, cube := range initialCubes {
 				splits := SplitCubeSmart(cube, cnfData.Clauses)

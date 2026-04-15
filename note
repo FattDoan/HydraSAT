@@ -1,0 +1,4 @@
+rand3sat 200 vars is the max (a bit long)
+150 to 200 sweet spot
+
+- fix that when master finish one porblem, the workers disconnects
