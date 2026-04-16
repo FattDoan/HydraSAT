@@ -41,7 +41,7 @@
     year={2019}
 }
 
-@inproceedings{BiereFallerFazekasFleuryFroleyks-CAV24,
+@inproceedings{cadical,
   author       = {Armin Biere and
                   Tobias Faller and
                   Katalin Fazekas and
@@ -150,4 +150,104 @@ address="Cham",
 pages="42--57",
 abstract="Decision-DNNF is a strict subset of decomposable negation normal form (DNNF) that plays a key role in analyzing the complexity of model counters (the searches performed by these counters have their traces in Decision-DNNF). This paper presents a number of results on Decision-DNNF. First, we introduce a new notion of CNF width and provide an algorithm that compiles CNFs into Decision-DNNFs in time and space that are exponential only in this width. The new width strictly dominates the treewidth of the CNF primal graph: it is no greater and can be bounded when the treewidth of the primal graph is unbounded. This new result leads to a tighter bound on the complexity of model counting. Second, we show that the output of the algorithm can be converted in linear time to a sentential decision diagram (SDD), which leads to a tighter bound on the complexity of compiling CNFs into SDDs.",
 isbn="978-3-319-10428-7"
+}
+
+@inproceedings{Cook-theorem,
+author = {Cook, Stephen A.},
+title = {The complexity of theorem-proving procedures},
+year = {1971},
+isbn = {9781450374644},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/800157.805047},
+doi = {10.1145/800157.805047},
+abstract = {It is shown that any recognition problem solved by a polynomial time-bounded nondeterministic Turing machine can be “reduced” to the problem of determining whether a given propositional formula is a tautology. Here “reduced” means, roughly speaking, that the first problem can be solved deterministically in polynomial time provided an oracle is available for solving the second. From this notion of reducible, polynomial degrees of difficulty are defined, and it is shown that the problem of determining tautologyhood has the same polynomial degree as the problem of determining whether the first of two given graphs is isomorphic to a subgraph of the second. Other examples are discussed. A method of measuring the complexity of proof procedures for the predicate calculus is introduced and discussed.},
+booktitle = {Proceedings of the Third Annual ACM Symposium on Theory of Computing},
+pages = {151–158},
+numpages = {8},
+location = {Shaker Heights, Ohio, USA},
+series = {STOC '71}
+}
+
+@inproceedings{security26,
+  author       = {Guilhem Lacombe and
+                  S{\'{e}}bastien Bardin},
+  editor       = {Lujo Bauer and
+                  Giancarlo Pellegrino},
+  title        = {Attacker Control and Bug Prioritization},
+  booktitle    = {34th {USENIX} Security Symposium, {USENIX} Security 2025, Seattle,
+                  WA, USA, August 13-15, 2025},
+  pages        = {4541--4560},
+  publisher    = {{USENIX} Association},
+  year         = {2025},
+  url          = {https://www.usenix.org/conference/usenixsecurity25/presentation/lacombe},
+  timestamp    = {Fri, 31 Oct 2025 16:17:35 +0100},
+  biburl       = {https://dblp.org/rec/conf/uss/LacombeB25.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+@article{sat-software-verif,
+title = {Efficient SAT-based bounded model checking for software verification},
+journal = {Theoretical Computer Science},
+volume = {404},
+number = {3},
+pages = {256-274},
+year = {2008},
+note = {International Symposium on Leveraging Applications of Formal Methods (ISoLA 2004)},
+issn = {0304-3975},
+doi = {https://doi.org/10.1016/j.tcs.2008.03.013},
+url = {https://www.sciencedirect.com/science/article/pii/S0304397508002223},
+author = {Franjo Ivančić and Zijiang Yang and Malay K. Ganai and Aarti Gupta and Pranav Ashar},
+keywords = {Software verification, Bounded model checking, SAT-based model checking},
+abstract = {This paper discusses our methodology for formal analysis and automatic verification of software programs. It is applicable to a large subset of the C programming language that includes pointer arithmetic and bounded recursion. We consider reachability properties, in particular whether certain assertions or basic blocks are reachable in the source code, or whether certain standard property violations can occur. We perform this analysis via a translation to a Boolean circuit representation based on modeling basic blocks. The program is then analyzed by a back-end SAT-based bounded model checker, where each unrolling is mapped to one step in a block-wise execution of the program. The main contributions of this paper are as follows: (1) Use of basic block-based unrollings with SAT-based bounded model checking of software programs. This allows us to take advantage of SAT-based learning inherent to the best performing bounded model checkers. (2) Various heuristics customized for models automatically generated from software, allowing a more efficient SAT-based analysis. (3) A prototype tool called F-Soft has been implemented using our methodology. We present experimental results based on multiple case studies including a C-based implementation of a network protocol, and compare the performance gains using the proposed heuristics.}
+}
+
+@InProceedings{model-counting-software,
+author="Teuber, Samuel
+and Weigl, Alexander",
+editor="Abate, Alessandro
+and Marin, Andrea",
+title="Quantifying Software Reliability via Model-Counting",
+booktitle="Quantitative Evaluation of Systems",
+year="2021",
+publisher="Springer International Publishing",
+address="Cham",
+pages="59--79",
+abstract="Critical software should be verified. But how to handle the situation when a proof for the functional correctness could not be established? In this case, an assessment of the software is required to estimate the risk of using the software.",
+isbn="978-3-030-85172-9"
+}
+
+@article{arjun,
+  author       = {Mate Soos and
+                  Kuldeep S. Meel},
+  title        = {Arjun: An Efficient Independent Support Computation Technique and
+                  its Applications to Counting and Sampling},
+  journal      = {CoRR},
+  volume       = {abs/2110.09026},
+  year         = {2021},
+  url          = {https://arxiv.org/abs/2110.09026},
+  eprinttype   = {arXiv},
+  eprint       = {2110.09026},
+  timestamp    = {Fri, 22 Oct 2021 13:33:09 +0200},
+  biburl       = {https://dblp.org/rec/journals/corr/abs-2110-09026.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{padoa, title={Alessandro Padoa. Essai d’une théorie algébrique des nombres entiers, précédé d’une introduction logique à une théorie déductive quelconque. Bibliothèque du Congrès International de Philosophie, Volume III, Logique et histoire des sciences, Librairie Armand Colin, Paris1901, pp. 309–365.}, volume={40}, DOI={10.1017/S0022481200053603}, number={3}, journal={Journal of Symbolic Logic}, author={Church, Alonzo}, year={1975}, pages={473–527}}
+
+@inproceedings{VSIDS,
+author = {Moskewicz, Matthew W. and Madigan, Conor F. and Zhao, Ying and Zhang, Lintao and Malik, Sharad},
+title = {Chaff: engineering an efficient SAT solver},
+year = {2001},
+isbn = {1581132972},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/378239.379017},
+doi = {10.1145/378239.379017},
+abstract = {Boolean Satisfiability is probably the most studied of combinatorial optimization/search problems. Significant effort has been devoted to trying to provide practical solutions to this problem for problem instances encountered in a range of applications in Electronic Design Automation (EDA), as well as in Artificial Intelligence (AI). This study has culminated in the development of several SAT packages, both proprietary and in the public domain (e.g. GRASP, SATO) which find significant use in both research and industry. Most existing complete solvers are variants of the Davis-Putnam (DP) search algorithm. In this paper we describe the development of a new complete solver, Chaff, which achieves significant performance gains through careful engineering of all aspects of the search - especially a particularly efficient implementation of Boolean constraint propagation (BCP) and a novel low overhead decision strategy. Chaff has been able to obtain one to two orders of magnitude performance improvement on difficult SAT benchmarks in comparison with other solvers (DP or otherwise), including GRASP and SATO.},
+booktitle = {Proceedings of the 38th Annual Design Automation Conference},
+pages = {530–535},
+numpages = {6},
+keywords = {design verification, boolean satisfiability},
+location = {Las Vegas, Nevada, USA},
+series = {DAC '01}
 }

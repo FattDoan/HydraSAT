@@ -1,0 +1,43 @@
+c o Arjun SHA1: e4380e6a3478226c99c39e6471cc9f5a7b93b254
+c o SBVA SHA1: e71eef47ae64e304df987b3709d17ac6b8f6ce0c
+c o CMS SHA1: 1533d22cec8ef0e569d2050a2abc115b058606c7
+c o Using ideas by JM Lagniez, and Pierre Marquis
+c o     from paper 'Improving Model Counting [..] IJCAI 2016
+c o Using VMTF, picosat, CaDiCaL, and CadiBack code by Armin Biere
+c o CMS is MIT licensed
+c o Using code from 'When Boolean Satisfiability Meets Gauss-E. in a Simplex Way'
+c o       by C.-S. Han and J.-H. Roland Jiang in CAV 2012. Fixes by M. Soos
+c o Using CCAnr from 'CCAnr: A Conf. Checking Based Local Search Solver [...]'
+c o       by Shaowei Cai, Chuan Luo, and Kaile Su, SAT 2015
+c o Using Oracle code from 'Integrating Tree Decompositions [...]'
+c o       by Tuukka Korhonen and Matti Jarvisalo, CP 2021
+c o [arjun] Compilation environment: CMAKE_CXX_COMPILER = /usr/bin/g++ | CMAKE_CXX_FLAGS =  -fno-stack-protector -Wall -Wextra -Wunused -Wsign-compare -march=sandybridge -Wtype-limits -Wuninitialized -Wno-deprecated -Wno-extra-semi -Wstrict-aliasing -Wpointer-arith -fvisibility=hidden -Wpointer-arith -Wformat-nonliteral -Winit-self -Wparentheses -Wunreachable-code -msse4.2 -mpopcnt -Wlogical-op -Wrestrict -Wnull-dereference -Wdouble-promotion -Wshadow -Wformat=2 -pedantic | COMPILE_DEFINES =  -DSYNTH -DNDEBUG -D_FORTIFY_SOURCE=0 -DUSE_ZLIB | STATICCOMPILE = ON | ZLIB_FOUND = TRUE | ENABLE_ASSERTIONS = OFF | MY_TARGETS =  | 
+c o executed with command line: ./src/external/arjun-amd64/arjun cnf_instances/simple10.cnf
+c o [arjun] Input file: cnf_instances/simple10.cnf
+c o --> Executing strategy token: clean-cls
+c o --> Executing strategy token: must-scc-vrepl
+c o [scc] new: 0 BP 0M T: 0.00
+c o [vrep] vars 0 lits 0 rem-bin-cls 0 rem-long-cls 0 BP 0M T: 0.00
+c o [consolidate] mini T: 0.00
+c o global_timeout_multiplier: 2.5
+c o [branch] rebuilding order heap for all branchings. Current branching: vsid
+c o [0m[arjun-simp] probing all sampling variables[0m
+c o --> Executing strategy token: must-scc-vrepl
+c o [scc] new: 0 BP 0M T: 0.00
+c o [vrep] vars 0 lits 0 rem-bin-cls 0 rem-long-cls 0 BP 0M T: 0.00
+c o [consolidate] mini T: 0.00
+c o global_timeout_multiplier: 2.5
+c o [branch] rebuilding order heap for all branchings. Current branching: vsid
+c o [0m[arjun-simp] Removed set       : 0 new size: 20[0m
+c o [0m[arjun-simp] Removed eq lits: 0 new size: 20[0m
+c o [0m[arjun-simp] probe removed: 0 perc: 0.00 T: 0.00[0m
+c o [0m[arjun-simp] Removed eq lits: 0 new size: 20[0m
+c o [0m[arjun-simp] Removed set       : 0 new size: 20[0m
+c o [0m[arjun-simp] get-empties removed: 0 perc: 0.00 total empties now: 0 T: 0.00[0m
+c o [0m[arjun-simp] CMS::simplify() with no BVE, intree probe...[0m
+c o [0m[arjun] run_minimize_indep finished T: 0.02[0m
+c o [arjun] final set size:      11 percent of original: 55.000 %
+c p show 1 2 3 4 5 6 8 10 11 12 17 0
+c p optshow 1 2 3 4 5 6 8 10 11 12 17 0
+c MUST MULTIPLY BY 1
+c o [arjun] All done. T: 0.02

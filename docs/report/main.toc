@@ -1,15 +1,31 @@
 \babel@toc {english}{}\relax 
 \contentsline {chapter}{\numberline {1}Context}{3}{chapter.1}%
 \contentsline {chapter}{\numberline {2}Motivation}{3}{chapter.2}%
-\contentsline {chapter}{\numberline {3}Sequential \#SAT solver background}{4}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Ganak2}{4}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Alternative solvers}{4}{section.3.2}%
+\contentsline {chapter}{\numberline {3}Sequential \#SAT solvers background}{4}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Alternative solvers}{4}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Ganak2}{4}{section.3.2}%
+\contentsline {paragraph}{Dual Independent Set Framework}{4}{paragraph*.2}%
+\contentsline {paragraph}{Formula Simplification}{5}{paragraph*.3}%
+\contentsline {paragraph}{Refined Residual Formula Processing}{5}{paragraph*.4}%
 \contentsline {chapter}{\numberline {4}My contribution}{5}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Work parition}{5}{section.4.1}%
-\contentsline {section}{\numberline {4.2}General schema}{5}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Heuristics for work partition}{5}{section.4.3}%
-\contentsline {chapter}{\numberline {5}Implementation and evaluation}{5}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Implementation}{5}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Evaluation}{5}{section.5.2}%
-\contentsline {chapter}{\numberline {6}Conclusion and future work}{5}{chapter.6}%
-\contentsline {chapter}{Bibliography}{6}{chapter*.2}%
+\contentsline {section}{\numberline {4.1}Work partitioning via cube decomposition and dynamic load balancing}{6}{section.4.1}%
+\contentsline {paragraph}{Cube decomposition}{6}{paragraph*.5}%
+\contentsline {paragraph}{Adaptive timeout}{6}{paragraph*.6}%
+\contentsline {paragraph}{Branching heuristics}{6}{paragraph*.7}%
+\contentsline {paragraph}{Cube splitting function}{7}{paragraph*.8}%
+\contentsline {section}{\numberline {4.2}Master-side}{7}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Worker-side}{9}{section.4.3}%
+\contentsline {chapter}{\numberline {5}Implementation and evaluation}{9}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Implementation}{9}{section.5.1}%
+\contentsline {paragraph}{General Architecture}{9}{paragraph*.11}%
+\contentsline {paragraph}{Communication layer}{9}{paragraph*.13}%
+\contentsline {paragraph}{Master implementation}{11}{paragraph*.14}%
+\contentsline {paragraph}{Worker implementation}{11}{paragraph*.15}%
+\contentsline {paragraph}{Containerization}{11}{paragraph*.16}%
+\contentsline {paragraph}{Terminal user interface}{12}{paragraph*.17}%
+\contentsline {paragraph}{Build system}{12}{paragraph*.18}%
+\contentsline {section}{\numberline {5.2}Evaluation}{12}{section.5.2}%
+\contentsline {chapter}{\numberline {6}Conclusion and future work}{12}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Conclusion}{12}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Limitations and improvements}{12}{section.6.2}%
+\contentsline {chapter}{Bibliography}{14}{chapter*.19}%

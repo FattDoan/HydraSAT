@@ -4,9 +4,6 @@
 \usepackage[cyr]{aeguill}
 \usepackage[english]{babel}
 \usepackage{xpatch}
-%%Diagram packages
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta, positioning, fit, calc, shapes.geometric, shapes.misc}
 
 %% Remove the blank page after each chapter
 \makeatletter
@@ -116,7 +113,7 @@ Although sequential model counters have become highly effective,
 many instances remain too expensive to solve on a single machine. 
 This report presents a distributed framework for exact model counting based 
 on a master-worker architecture. The framework partitions the search space 
-into disjoint instances of the input problem (called ``cubes''), assigns them to workers, and aggregates the resulting counts. 
+into disjoint cubes, assigns them to workers, and aggregates the resulting counts. 
 To reduce load imbalance caused by heterogeneous subproblem difficulty, 
 it combines adaptive timeout estimation with dynamic cube resplitting. 
 The implementation is solver-agnostic and uses gRPC for communication between components. 
@@ -220,7 +217,6 @@ For the primary evaluation of this work, Ganak2 \cite{SM2025, SRSM19} is chosen 
 Ganak2 is a state-of-the-art model counter that builds upon the sharpSAT architecture.
 Here's a high-level overview of its architecture and key features:
 \vspace{-1em}
-%% TODO: more formalized description (introduce V-set)
 \paragraph{Dual Independent Set Framework} Utilizing the integrated \textbf{Arjun} \cite{arjun} preprocessor, 
 Ganak2 implements a dual-set strategy to balance search efficiency with SAT-solver transitions. 
 It distinguishes between the \textbf{S-set} (SAT-eligibility set) and the \textbf{D-set} (Decision set):
@@ -241,10 +237,9 @@ By leveraging an assumption-based CDCL framework, it prunes the
 formula of redundant variables before the search begins, preventing the solver from performing 
 unnecessary computations on variables that are already logically defined by the support set.
 \vspace{-1em}
-%%TODO: not tell too much
 \paragraph{Refined Residual Formula Processing} Ganak2 optimizes the leaves of the search tree 
 by switching to a modern SAT solver engine when the residual formula becomes simple enough. 
-This engine incorporates state-of-the-art SAT heuristics such as VSIDS branching, 
+This engine incorporates state-of-the-art SAT heuristics such as \textbf{VSIDS} branching, 
 \textbf{Luby-based restarts}, and \textbf{polarity caching}. Crucially, Ganak2 maintains a 
 seamless state transition, allowing the solver to move between the counting phase and the 
 SAT phase without losing learned clauses or forcing an expensive restart of the component cache.
@@ -323,14 +318,10 @@ We define a heuristic function
 h : (F,C) \mapsto (x_1,\dots,x_k), \qquad 1 \le k \le k_{\max},
 \]
 which selects a small set of branching variables from the restricted formula $F \land C$. 
-The parameter $k_{\max}$ is kept small (typically $k \in \{1,2,3\}$) to avoid excessive splitting 
-which can lead to an explosion of new cubes in the queue.
+The parameter $k_{\max}$ is kept small (typically $k \in \{1,2,3\}$) since we 
 
-The heuristic can be instantiated in several ways depending on the desired trade-off between computational cost and decomposition quality. 
-For example, it may select variables uniformly at random, prioritize variables with high clause occurrence, 
-exploit structural properties in tree decompositions \cite{tree-decomp},
-or reuse solver-specific signals such as VSIDS scores. 
-The goal is to identify variables whose assignment is likely to significantly simplify the remaining formula.
+
+The heuristic can be instantiated in several ways depending on the desired trade-off between computational cost and decomposition quality. For example, it may select variables uniformly at random, prioritize variables with high clause occurrence, exploit structural properties such as separators in the formula graph, or reuse solver-specific signals such as VSIDS scores. The goal is to identify variables whose assignment is likely to significantly simplify the remaining formula.
 
 \paragraph{Cube splitting function}
 Given $(x_1,\dots,x_k) = h(F,C)$, the cube $C$ is refined by enumerating all assignments to the selected variables. For each vector $\sigma \in \{0,1\}^k$, define:
@@ -526,105 +517,7 @@ Connect to master at $A$ \tcp*[r]{establish gRPC session}
 
 \chapter{Implementation and evaluation}
 \section{Implementation}
-
-\paragraph{General Architecture}
-Our framework is built upon a distributed master-worker architecture designed to handle large-scale 
-parallelized model counting. The system leverages gRPC for high-performance communication, 
-utilizing a pull-based task distribution model where workers request formulas and 
-the master provides centralized scheduling and result aggregation. As illustrated in Figure \ref{fig:architecture}, 
-this design incorporates real-time telemetry via bidirectional streams and a dedicated TUI for live monitoring 
-of the global solving state.
-
-%%TODO: add box for physical nodes for every workers
-\begin{figure}[t]
-\centering
-\begin{tikzpicture}[
-    font=\small,
-    master/.style={draw, rounded corners=4pt, minimum width=4.2cm,
-                   minimum height=1.1cm, align=center, thick, fill=blue!6},
-    tui/.style={draw, rounded corners=4pt, minimum width=3cm,
-                minimum height=1.1cm, align=center, thick, fill=teal!8},
-    worker/.style={draw, rounded corners=4pt, minimum width=2.8cm,
-                   minimum height=1.0cm, align=center, thick, fill=orange!7},
-    ganak/.style={draw, rounded corners=4pt, minimum width=2.4cm,
-                  minimum height=0.8cm, align=center, fill=gray!10,
-                  font=\scriptsize},
-    rpc/.style={-{Stealth[length=2mm]}, thick},
-    stream/.style={-{Stealth[length=2mm]}, thick, dashed},
-    spawn/.style={-{Stealth[length=1.5mm]}, thin, gray},
-    lbl/.style={font=\scriptsize, inner sep=3pt}
-]
-
-%% Nodes 
-\node[master] (master) {%
-  \textbf{Master}\\[2pt]
-  \scriptsize Scheduling · Aggregation · Timeout};
-
-\node[tui, right=3.5cm of master] (tui) {%
-  \textbf{TUI}\\[2pt]
-  \scriptsize Live monitoring};
-
-%% Worker Row
-% Grouped Workers (Physical Node B)
-\node[worker, below=2.8cm of master, xshift=-1.6cm] (w2) {Worker 2\\[-1pt]\scriptsize hostname B};
-\node[worker, below=2.8cm of master, xshift=1.6cm]  (w3) {Worker 3\\[-1pt]\scriptsize hostname B};
-
-% Outer Workers
-\node[worker, left=1.0cm of w2] (w1) {Worker 1\\[-1pt]\scriptsize hostname A};
-\node[worker, right=1.0cm of w3] (wN) {Worker $N$\\[-1pt]\scriptsize hostname \dots};
-
-%% ganak subprocesses
-\node[ganak, below=0.55cm of w1] (g1) {\texttt{ganak}};
-\node[ganak, below=0.55cm of w2] (g2) {\texttt{ganak}};
-\node[ganak, below=0.55cm of w3] (g3) {\texttt{ganak}};
-\node[ganak, below=0.55cm of wN] (gN) {\texttt{ganak}};
-
-%% Grouping box for Physical Node B
-\node[draw, dotted, thick, rounded corners=6pt, inner sep=8pt,
-      fit=(w2)(w3)(g2)(g3),
-      label={[font=\scriptsize\itshape, text=black!80]below:Physical Node B}] (nodeb) {};
-
-%% Worker pool bounding box
-\node[draw, dashed, rounded corners=6pt, inner sep=14pt,
-      fit=(w1)(wN)(g1)(gN)(nodeb),
-      label=above:\small\textit{Worker pool}] (pool) {};
-
-%% TUI ↔ Master (parallel straight lines via yshift)
-\draw[rpc] ([yshift=6pt]tui.west) -- node[lbl, above]{\texttt{GetMasterStats}} ([yshift=6pt]master.east);
-\draw[rpc] ([yshift=-6pt]master.east) -- node[lbl, below]{\texttt{MasterStatsResponse}} ([yshift=-6pt]tui.west);
-
-%% Worker 1 ↔ Master: GetTask & TaskPayload
-\draw[rpc, bend left=15] (w1.north) to node[lbl, left, align=right]{\texttt{GetTask}} (master.south west);
-\draw[rpc, bend left=15] (master.south west) to node[lbl, right]{\texttt{TaskPayload}} (w1.north east);
-
-%% Worker 2 → Master: SubmitResult (straight up)
-\draw[rpc] (w2.north) -- node[lbl, right, yshift=12pt]{\texttt{SubmitResult}} (w2.north |- master.south);
-
-%% Master → Worker 3: TimeoutUpdate stream (straight down)
-\draw[stream] (w3.north |- master.south) -- node[lbl, right, xshift=2pt, yshift = 12pt]{\texttt{TimeoutUpdate}} (w3.north);
-
-%% Worker N ↔ Master: ReportStatus & Timeout stream
-\draw[stream, bend right=15] (wN.north) to node[lbl, right, align=left]{\texttt{ReportStatus}} (master.south east);
-
-%% spawn arrows
-\draw[spawn] (w1) -- node[lbl, right]{\scriptsize spawn} (g1);
-\draw[spawn] (w2) -- (g2);
-\draw[spawn] (w3) -- (g3);
-\draw[spawn] (wN) -- (gN);
-%% Robust Legend 
-\begin{scope}[shift={([yshift=-1cm, xshift=0cm]pool.south west)}]
-  \draw[rpc, line width=0.7pt] (0, 0) -- (0.8, 0) 
-       node[right, font=\scriptsize, inner sep=4pt] {Unary RPC (request/response)};
-  \draw[stream, line width=0.7pt] (0, -0.5) -- (0.8, -0.5) 
-       node[right, font=\scriptsize, inner sep=4pt] {Server-streaming RPC / periodic call};
-\end{scope}
-
-\end{tikzpicture}
-\caption{%
-  Distributed master–worker architecture\@.}
-\label{fig:architecture}
-\end{figure}
-
+\vspace{-1.5em}
 \paragraph{Communication layer}
 The distributed components communicate through gRPC and Protocol Buffers. 
 This choice provides a strongly typed interface between the master, the workers, 
@@ -658,7 +551,6 @@ Docker Compose is used to orchestrate the master, the worker replicas, and the s
 This approach supports both fully containerized deployments and hybrid setups in which only part of the system is containerized.
 
 \paragraph{Terminal user interface}
-%TODO: add screenshot
 The terminal user interface is implemented in Go using Bubble Tea. Its architecture follows 
 the event-driven style of the Elm framework: the model stores the current state of the system,
 updates react to events such as user input or gRPC responses, and the view renders the state to the terminal. 
@@ -671,7 +563,6 @@ It automates code generation from the Protocol Buffer definitions, builds the Go
 and launches the distributed environment with a single command. This reduces manual setup and ensures that the master, the workers, and the interface remain synchronized with the same communication schema.
 
 \section{Evaluation}
-%TODO: mention on cnfgen if use it
 \vspace{-1.5em}
 \chapter{Conclusion and future work}
 \section{Conclusion}
@@ -692,7 +583,7 @@ on instances with uneven subproblem difficulty, although its effectiveness
 depends on the quality of the initial decomposition and the variability of the backend solver.
 
 A primary area of improvement lies in the cube decomposition process, 
-where the integration of structural heuristics such as tree decomposition or VSIDS-based \cite{VSIDS}(Variable State Independent Decaying Sum) variable 
+where the integration of structural heuristics such as tree decomposition or VSIDS-based variable 
 selection could facilitate the generation of more balanced and higher-quality subproblems. 
 
 Furthermore, while the current dynamic timeout mechanism relies on a 
