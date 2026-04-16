@@ -186,7 +186,7 @@ TRIALS ?= 1
 benchmark-ganak:
 	@echo "[Hydra] Running raw ganak baseline..."
 	@chmod +x benchmark_ganak.sh
-	./benchmark_ganak.sh cnf_instances results/benchmark.csv
+	./benchmark_ganak.sh cnf_instances results/benchmark_baseline.csv
 
 # Post-process results: console table + summary.csv + table.tex
 analyze:

@@ -17,7 +17,7 @@
 set -euo pipefail
 
 CNF_FOLDER="${1:-cnf_instances}"
-OUTPUT_CSV="${2:-results/benchmark.csv}"
+OUTPUT_CSV="${2:-results/benchmark_baseline.csv}"
 TIMEOUT_SEC="${3:-3600}"
 
 # ── Locate ganak ──────────────────────────────────────────────────────────────
