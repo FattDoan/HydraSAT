@@ -232,15 +232,6 @@ func (s *MasterServer) SubmitResult(ctx context.Context, req *pb.TaskResult) (*p
 		tm.EnqueueCubes(newCubes)
 
 	} else {
-		if req.DurationSec > 0 {
-			oldTimeout := tt.CurrentTimeoutSec()
-			tt.RecordCompletion(req.DurationSec)
-			newTimeout := tt.CurrentTimeoutSec()
-			if newTimeout != oldTimeout {
-				s.broadcaster.Broadcast(newTimeout)
-			}
-		}
-
 		val := new(big.Int)
 		if _, ok := val.SetString(req.Count, 10); !ok {
 			fmt.Printf("[master] Worker %s@%s: failed to parse count %q for task %d\n",
@@ -249,6 +240,21 @@ func (s *MasterServer) SubmitResult(ctx context.Context, req *pb.TaskResult) (*p
 			s.countMu.Lock()
 			s.totalCount.Add(s.totalCount, val)
 			s.countMu.Unlock()
+
+			// Only update the dynamic timeout for SAT results (count > 0)
+			if req.Count != "0" && req.DurationSec > 0 {
+				oldTimeout := s.timeoutTracker.CurrentTimeoutSec()
+				
+				// Clamp to min timeout to avoid sub-second timeouts that cause instability
+				var durationSec = max(req.DurationSec, 30.0)
+				s.timeoutTracker.RecordCompletion(durationSec)
+				newTimeout := s.timeoutTracker.CurrentTimeoutSec()
+				if newTimeout != oldTimeout {
+					s.broadcaster.Broadcast(newTimeout)
+				}
+			}
+
+
 			fmt.Printf("[master] Worker %s@%s task %d: count=%s  avg=%.1fs  next_timeout=%ds\n",
 				req.WorkerId, hostname, req.TaskId, val.Text(10),
 				tt.AvgTaskSec(), tt.CurrentTimeoutSec())

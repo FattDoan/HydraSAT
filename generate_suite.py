@@ -11,7 +11,7 @@ def main():
     # For #SAT, 70-100 variables is often a sweet spot for testing.
     # Ratio (M/N) = 3.0: Under-constrained, tons of models.
     # Ratio (M/N) = 4.26: Phase transition, very hard to find the few models.
-    var_counts = [100, 140, 150, 160, 170, 180, 190]
+    var_counts = [120, 140, 150, 155, 160, 165, 170]
     ratios = [3.0, 4.2] 
     
     for n in var_counts:
@@ -23,7 +23,7 @@ def main():
             F.to_file(os.path.join(out_dir, f"rand3sat_{n}v_{m}c.cnf"))
 
 
-    var_counts_4sat = [80, 90, 100, 110]
+    var_counts_4sat = [80, 90]
     # RANDOM 4-SAT (Mixed SAT/UNSAT)
     for n in var_counts_4sat:
         for r in ratios:

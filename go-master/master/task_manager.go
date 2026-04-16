@@ -124,40 +124,64 @@ func SplitCube(cube []int32) [][]int32 {
 // More effective but simpler branching heuristic
 // split on variables most appearing in the original formula, ignoring those already in the cube.
 func SplitCubeSmart(cube []int32, clauses [][]int32) [][]int32 {
-	var freq [1000000]int
+	// Build the set of variable indices already committed in this cube.
+	inCube := make(map[int32]struct{}, len(cube))
+	for _, lit := range cube {
+		v := lit
+		if v < 0 {
+			v = -v
+		}
+		inCube[v] = struct{}{}
+	}
+ 
+	// Tally how often each variable appears across all clauses.
+	freq := make(map[int32]int)
 	for _, clause := range clauses {
 		for _, lit := range clause {
-			var v int32
-			if lit < 0 {
-				v = -lit
-			} else {
-				v = lit
+			v := lit
+			if v < 0 {
+				v = -v
+			}
+			if v == 0 {
+				continue // skip any stray terminator
 			}
 			freq[v]++
 		}
 	}
-
-	var maxVar int32
-	for _, lit := range cube {
-		if lit < 0 {
-			lit = -lit
-		}
-		if lit > maxVar {
-			maxVar = lit
-		}
-	}
-
+ 
+	// Pick the most frequent variable that is NOT already in the cube.
 	var bestVar int32
 	var bestFreq int
 	for v, f := range freq {
-		if int32(v) > maxVar && f > bestFreq {
-			bestVar = int32(v)
+		if _, alreadyIn := inCube[v]; alreadyIn {
+			continue
+		}
+		// Break ties by preferring the higher-numbered variable so the
+		// choice is deterministic regardless of map iteration order.
+		if f > bestFreq || (f == bestFreq && v > bestVar) {
+			bestVar = v
 			bestFreq = f
 		}
 	}
-
+ 
+	// Fallback: all formula variables are already in the cube (shouldn't
+	// happen in practice, but guard against it so we never append 0).
+	if bestVar == 0 {
+		var maxVar int32
+		for _, lit := range cube {
+			if lit < 0 {
+				lit = -lit
+			}
+			if lit > maxVar {
+				maxVar = lit
+			}
+		}
+		bestVar = maxVar + 1
+	}
+ 
 	return [][]int32{
 		append(append([]int32{}, cube...), bestVar),
 		append(append([]int32{}, cube...), -bestVar),
 	}
 }
+ 

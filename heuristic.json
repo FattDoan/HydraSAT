@@ -2,7 +2,7 @@
   "dynamicTimeout": true,
   "timeoutMultiplier": 2,
   "initialTimeoutSec": 0,
-  "readFolder": true,
+  "readFolder": false,
   "inputFolder": "cnf_instances",
   "outputLog": "results/benchmark.csv",
   "maxWorkers": 0,

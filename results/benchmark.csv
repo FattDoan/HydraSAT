@@ -1,1 +1,5 @@
 timestamp,benchmark_label,worker_limit,cnf_file,model_count,completed_tasks,timed_out_tasks,total_tasks,wall_time_sec,avg_task_sec,final_timeout_sec,workers
+2026-04-16T20:08:32Z,,0,cnf_instances/rand3sat_120v_360c.cnf,313748085504360,99,35,134,178.799,8.497,17,8
+2026-04-16T20:08:39Z,,0,cnf_instances/rand3sat_120v_504c.cnf,1832,71,7,78,4.865,0.021,1,8
+2026-04-16T20:15:44Z,,0,cnf_instances/rand3sat_120v_504c.cnf,1832,71,7,78,2.988,0.024,1,8
+2026-04-16T20:21:38Z,,0,cnf_instances/rand3sat_120v_504c.cnf,1832,64,0,64,3.419,30.000,60,8
