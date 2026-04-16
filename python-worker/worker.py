@@ -14,6 +14,15 @@ import solver_pb2_grpc
 from parser import parse_ganak_unweighted_count
 
 
+# How long to keep retrying before giving up permanently.
+# Between CNF files the master is still UP (gRPC server stays running),
+# so UNAVAILABLE between files is just a transient hiccup that resolves
+# in under a second. We retry for up to GIVE_UP_AFTER_SEC before exiting.
+GIVE_UP_AFTER_SEC = 120   # 2 minutes of continuous failure = real problem
+RETRY_BASE_SEC    = 2.0   # first retry delay
+RETRY_MAX_SEC     = 15.0  # cap on exponential back-off
+
+
 class SATWorker:
     def __init__(self, master_address: str, worker_id: str):
         self.master_address = master_address
@@ -63,8 +72,6 @@ class SATWorker:
         stop_event: threading.Event,
         interval: float = 2.0,
     ) -> threading.Thread:
-        """Reports CPU/RAM to master every `interval` seconds."""
-
         def _report():
             while not stop_event.is_set():
                 cpu, mem_mb, mem_pct = self._collect_stats()
@@ -78,8 +85,8 @@ class SATWorker:
                         memory_mb=mem_mb,
                         memory_pct=mem_pct,
                     ))
-                except grpc.RpcError as e:
-                    print(f"[{self.worker_id}] ReportStatus error: {e}")
+                except grpc.RpcError:
+                    pass  # transient; the main loop handles persistent failures
                 stop_event.wait(interval)
 
         start_ts = time.time()
@@ -97,12 +104,6 @@ class SATWorker:
         stop_event: threading.Event,
         killed_event: threading.Event,
     ) -> threading.Thread:
-        """
-        Subscribes to master timeout broadcasts.
-        If the new timeout is already exceeded, kills proc and sets killed_event.
-        Otherwise logs remaining time.
-        """
-
         def _listen():
             try:
                 stream = self._stub.SubscribeTimeoutUpdates(
@@ -116,14 +117,11 @@ class SATWorker:
                         break
 
                     new_timeout = update.timeout_sec
-
-                    # 0 or MaxInt32 sentinel = no timeout
                     if new_timeout <= 0 or new_timeout >= 2_147_483_647:
                         print(f"[{self.worker_id}] task {task_id}: timeout update = no limit")
                         continue
 
                     elapsed = time.time() - start_ts
-
                     if elapsed >= new_timeout:
                         print(
                             f"[{self.worker_id}] task {task_id}: timeout updated to {new_timeout}s "
@@ -141,7 +139,6 @@ class SATWorker:
                             f"[{self.worker_id}] task {task_id}: timeout updated to {new_timeout}s "
                             f"(elapsed {elapsed:.1f}s, {remaining:.1f}s remaining)"
                         )
-
             except grpc.RpcError as e:
                 if not stop_event.is_set():
                     print(f"[{self.worker_id}] timeout stream error: {e}")
@@ -153,21 +150,16 @@ class SATWorker:
     # ── solving ────────────────────────────────────────────────────────────
 
     def _solve(self, task) -> solver_pb2.TaskResult:
-        """Construct the sub-formula, run ganak, return a TaskResult."""
         new_clauses = task.num_clauses + len(task.literals)
         header = f"p cnf {task.num_vars} {new_clauses}"
         cube_clauses = "\n".join(f"{lit} 0" for lit in task.literals)
         formula = f"{header}\n{task.formula_body}\n{cube_clauses}\n"
 
-        # MaxInt32 sentinel means no timeout — pass None so subprocess never
-        # raises TimeoutExpired on its own; early kills come from the subscriber.
         subprocess_timeout = (
             None if task.timeout_sec >= 2_147_483_647 else task.timeout_sec
         )
 
         start_ts = time.time()
-
-        # Popen (not run) so the subscriber thread can kill the process.
         proc = subprocess.Popen(
             [self.ganak_path, "/dev/stdin"],
             stdin=subprocess.PIPE,
@@ -177,7 +169,7 @@ class SATWorker:
         )
 
         stop_event = threading.Event()
-        killed_event = threading.Event()  # set by subscriber if it kills proc
+        killed_event = threading.Event()
 
         self._start_timeout_subscriber(
             task_id=task.task_id,
@@ -192,103 +184,149 @@ class SATWorker:
             duration = time.time() - start_ts
             stop_event.set()
 
-            # subscriber killed the proc — communicate() returned because the
-            # process died, not because it finished normally.
             if killed_event.is_set():
-                print(
-                    f"[{self.worker_id}] task {task.task_id} killed by timeout "
-                    f"update after {duration:.1f}s"
-                )
+                print(f"[{self.worker_id}] task {task.task_id} killed by timeout update after {duration:.1f}s")
                 return solver_pb2.TaskResult(
-                    task_id=task.task_id,
-                    worker_id=self.worker_id,
-                    count="0",
-                    duration_sec=duration,
-                    timed_out=True,
+                    task_id=task.task_id, worker_id=self.worker_id,
+                    count="0", duration_sec=duration, timed_out=True,
                 )
 
             count = parse_ganak_unweighted_count(stdout)
             return solver_pb2.TaskResult(
-                task_id=task.task_id,
-                worker_id=self.worker_id,
-                count=count,
-                duration_sec=duration,
-                timed_out=False,
+                task_id=task.task_id, worker_id=self.worker_id,
+                count=count, duration_sec=duration, timed_out=False,
             )
 
         except subprocess.TimeoutExpired:
-            # Static timeout fired (subprocess_timeout was not None)
             proc.kill()
             proc.wait()
             stop_event.set()
             duration = time.time() - start_ts
-            print(
-                f"[{self.worker_id}] task {task.task_id} timed out after {duration:.1f}s"
-            )
+            print(f"[{self.worker_id}] task {task.task_id} timed out after {duration:.1f}s")
             return solver_pb2.TaskResult(
-                task_id=task.task_id,
-                worker_id=self.worker_id,
-                count="0",
-                duration_sec=duration,
-                timed_out=True,
+                task_id=task.task_id, worker_id=self.worker_id,
+                count="0", duration_sec=duration, timed_out=True,
             )
 
-    # ── main loop ──────────────────────────────────────────────────────────
+    # ── connection + retry logic ───────────────────────────────────────────
 
-    def run(self):
-        with grpc.insecure_channel(self.master_address) as channel:
-            # Store stub on self FIRST — _solve and threads all use self._stub
-            self._stub = solver_pb2_grpc.SolverServiceStub(channel)
-            print(
-                f"[{self.worker_id}] connected to {self.master_address} "
-                f"(hostname: {self.hostname})"
-            )
+    def _run_with_channel(self, channel) -> bool:
+        """
+        Inner work loop for one channel lifetime.
+        Returns True  → caller should reconnect and retry.
+        Returns False → caller should exit (master sent permanent shutdown).
+        """
+        self._stub = solver_pb2_grpc.SolverServiceStub(channel)
+        print(f"[{self.worker_id}] connected to {self.master_address} (hostname: {self.hostname})")
 
-            while True:
-                try:
-                    task = self._stub.GetTask(solver_pb2.WorkerIdentity(
-                        worker_id=self.worker_id,
-                        hostname=self.hostname,
-                    ))
+        # Reset failure tracking on a fresh connection
+        consecutive_failures = 0
+        failure_start: float | None = None
 
-                    if task.task_id == -1:
-                        time.sleep(2)
-                        continue
+        while True:
+            try:
+                task = self._stub.GetTask(solver_pb2.WorkerIdentity(
+                    worker_id=self.worker_id,
+                    hostname=self.hostname,
+                ))
 
-                    timeout_display = (
-                        "no limit"
-                        if task.timeout_sec >= 2_147_483_647
-                        else f"{task.timeout_sec}s"
-                    )
-                    print(
-                        f"[{self.worker_id}] received task {task.task_id} "
-                        f"(timeout: {timeout_display}, cube: {list(task.literals)})"
-                    )
+                # Successful RPC — reset failure tracking
+                consecutive_failures = 0
+                failure_start = None
 
-                    stop_reporter = threading.Event()
-                    self._start_status_reporter(task.task_id, stop_reporter)
+                if task.task_id == -1:
+                    # No work right now (queue empty between files, or maxWorkers cap).
+                    # Sleep briefly and poll again — do NOT exit.
+                    time.sleep(2)
+                    continue
 
-                    result = self._solve(task)
+                timeout_display = (
+                    "no limit" if task.timeout_sec >= 2_147_483_647
+                    else f"{task.timeout_sec}s"
+                )
+                print(
+                    f"[{self.worker_id}] received task {task.task_id} "
+                    f"(timeout: {timeout_display}, cube: {list(task.literals)})"
+                )
 
-                    stop_reporter.set()
-                    self._stub.SubmitResult(result)
-                    print(
-                        f"[{self.worker_id}] submitted task {task.task_id}: "
-                        f"count={result.count} timed_out={result.timed_out}"
-                    )
+                stop_reporter = threading.Event()
+                self._start_status_reporter(task.task_id, stop_reporter)
 
-                except grpc.RpcError as e:
-                    if e.code() == grpc.StatusCode.UNAVAILABLE:
-                        print(f"[{self.worker_id}] master offline — shutting down")
-                        break
-                    print(f"[{self.worker_id}] RPC error: {e}")
+                result = self._solve(task)
+
+                stop_reporter.set()
+                self._stub.SubmitResult(result)
+                print(
+                    f"[{self.worker_id}] submitted task {task.task_id}: "
+                    f"count={result.count} timed_out={result.timed_out}"
+                )
+
+            except grpc.RpcError as e:
+                code = e.code()
+
+                if code == grpc.StatusCode.UNAVAILABLE:
+                    # The master is temporarily unreachable.
+                    # This is NORMAL between CNF files during the 3-second grace
+                    # period, or during a brief restart. Retry with backoff.
+                    now = time.time()
+                    if failure_start is None:
+                        failure_start = now
+                        print(f"[{self.worker_id}] master unavailable — retrying…")
+
+                    elapsed_failing = now - failure_start
+                    if elapsed_failing > GIVE_UP_AFTER_SEC:
+                        print(
+                            f"[{self.worker_id}] master has been unavailable for "
+                            f"{elapsed_failing:.0f}s — giving up"
+                        )
+                        return False  # permanent failure
+
+                    consecutive_failures += 1
+                    delay = min(RETRY_BASE_SEC * (1.5 ** consecutive_failures), RETRY_MAX_SEC)
+                    time.sleep(delay)
+                    # Signal to the outer loop to rebuild the channel
+                    return True
+
+                else:
+                    # Other RPC errors (deadline exceeded, internal, etc.)
+                    # — transient, back off and retry within the same channel
+                    print(f"[{self.worker_id}] RPC error ({code}): {e} — retrying in 5s")
                     time.sleep(5)
 
-                except Exception as e:
-                    import traceback
-                    print(f"[{self.worker_id}] unexpected error: {e}")
-                    traceback.print_exc()
+            except Exception as e:
+                import traceback
+                print(f"[{self.worker_id}] unexpected error: {e}")
+                traceback.print_exc()
+                return False  # unknown error — exit cleanly
+
+    # ── main entry point ───────────────────────────────────────────────────
+
+    def run(self):
+        """
+        Outer connection loop. Re-establishes the gRPC channel whenever the
+        inner loop signals that the connection was lost and should be retried.
+        Workers only truly exit when:
+          - The master has been continuously unavailable for GIVE_UP_AFTER_SEC
+          - An unexpected non-RPC exception occurs in the inner loop
+        """
+        while True:
+            try:
+                with grpc.insecure_channel(self.master_address) as channel:
+                    should_reconnect = self._run_with_channel(channel)
+
+                if not should_reconnect:
+                    print(f"[{self.worker_id}] shutting down")
                     break
+
+                # Brief pause before rebuilding the channel
+                print(f"[{self.worker_id}] reconnecting to {self.master_address}…")
+                time.sleep(2)
+
+            except Exception as e:
+                import traceback
+                print(f"[{self.worker_id}] channel error: {e}")
+                traceback.print_exc()
+                time.sleep(5)
 
 
 if __name__ == "__main__":
@@ -307,5 +345,5 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    print(f"Master address: {args.master}")
+    print(f"[worker] Master address: {args.master}")
     SATWorker(args.master, args.id).run()

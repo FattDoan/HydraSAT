@@ -19,38 +19,126 @@ import (
 type MasterServer struct {
 	pb.UnimplementedSolverServiceServer
 
-	taskManager    *TaskManager
-	workerTracker  *WorkerTracker
-	timeoutTracker *TimeoutTracker
-	resultLogger   *ResultLogger
-	cfg            *HeuristicConfig
-	cnfFile        string // for logging
+	// ── long-lived ────────────────────────────────────────────────────────────
+	grpcServer    *grpc.Server
+	workerTracker *WorkerTracker // workers stay connected across files
+	broadcaster   *TimeoutBroadcaster
+	resultLogger  *ResultLogger
+	cfg           *HeuristicConfig
 
+	// ── per-problem (all guarded by mu) ──────────────────────────────────────
+	mu             sync.RWMutex
+	taskManager    *TaskManager
+	timeoutTracker *TimeoutTracker
 	totalCount     *big.Int
-	countMutex     sync.Mutex
+	countMu        sync.Mutex
 	done           chan struct{}
 	startTime      time.Time
 	completedTasks int32
-	timedOutTasks  int32 // tasks that hit the timeout ceiling and were re-split
-	totalTasks     int32 // incremented on every EnqueueCubes call
-	
-	broadcaster *TimeoutBroadcaster
+	timedOutTasks  int32
+	totalTasks     int32
+	cnfFile        string
 }
 
-func NewMasterServer(cnfData *CNFData, cnfFile string, cfg *HeuristicConfig, logger *ResultLogger) *MasterServer {
-	tt := NewTimeoutTracker(cfg)
+// NewMasterServer creates the server shell. Call Listen() next, then Solve()
+// for each CNF file, then Shutdown() when the batch is done.
+func NewMasterServer(cfg *HeuristicConfig, logger *ResultLogger) *MasterServer {
 	return &MasterServer{
-		taskManager:    NewTaskManager(cnfData, tt),
-		workerTracker:  NewWorkerTracker(),
-		timeoutTracker: tt,
-		resultLogger:   logger,
-		broadcaster:    NewTimeoutBroadcaster(),
-		cfg:            cfg,
-		cnfFile:        cnfFile,
-		totalCount:     big.NewInt(0),
-		done:           make(chan struct{}),
-		startTime:      time.Now(),
+		workerTracker: NewWorkerTracker(),
+		broadcaster:   NewTimeoutBroadcaster(),
+		resultLogger:  logger,
+		cfg:           cfg,
+		// per-problem fields are nil until the first Solve() call
 	}
+}
+
+// Listen binds the gRPC server to port. Non-blocking — returns immediately
+// after the listener is up. Call Shutdown() to stop it.
+func (s *MasterServer) Listen(port string) error {
+	lis, err := net.Listen("tcp", ":"+port)
+	if err != nil {
+		return fmt.Errorf("failed to listen on :%s: %w", port, err)
+	}
+
+	s.grpcServer = grpc.NewServer()
+	pb.RegisterSolverServiceServer(s.grpcServer, s)
+
+	go func() {
+		if err := s.grpcServer.Serve(lis); err != nil {
+			log.Printf("gRPC server stopped: %v", err)
+		}
+	}()
+
+	fmt.Printf("[master] gRPC server listening on :%s\n", port)
+	return nil
+}
+
+// Solve resets the per-problem state for cnfData, loads initialCubes, and
+// blocks until every task is complete. It then writes the result log and
+// waits 3 seconds so the TUI captures the final stats — but it does NOT
+// stop the gRPC server, so workers stay connected for the next file.
+func (s *MasterServer) Solve(cnfData *CNFData, cnfFile string, initialCubes [][]int32) error {
+	// ── Reset per-problem state ───────────────────────────────────────────────
+	tt := NewTimeoutTracker(s.cfg)
+
+	s.mu.Lock()
+	s.taskManager = NewTaskManager(cnfData, tt)
+	s.timeoutTracker = tt
+	s.totalCount = big.NewInt(0)
+	s.done = make(chan struct{}, 1) // buffered so SubmitResult never blocks
+	s.startTime = time.Now()
+	s.cnfFile = cnfFile
+	atomic.StoreInt32(&s.completedTasks, 0)
+	atomic.StoreInt32(&s.timedOutTasks, 0)
+	atomic.StoreInt32(&s.totalTasks, 0)
+	s.mu.Unlock()
+
+	// ── Broadcast the initial timeout to any already-subscribed workers ───────
+	s.broadcaster.Broadcast(tt.CurrentTimeoutSec())
+
+	// ── Load initial cubes ────────────────────────────────────────────────────
+	atomic.AddInt32(&s.totalTasks, int32(len(initialCubes)))
+	s.mu.RLock()
+	tm := s.taskManager
+	s.mu.RUnlock()
+	tm.EnqueueCubes(initialCubes)
+
+	fmt.Printf("[master] Solving %s  (%d initial cubes)\n", cnfFile, len(initialCubes))
+
+	// ── Wait for completion ───────────────────────────────────────────────────
+	s.mu.RLock()
+	doneCh := s.done
+	s.mu.RUnlock()
+	<-doneCh
+
+	wallTime := time.Since(s.startTime).Seconds()
+	fmt.Printf("[master] %s done in %.1fs — holding 3s for TUI…\n", cnfFile, wallTime)
+
+	// ── Log result ────────────────────────────────────────────────────────────
+	if s.resultLogger != nil {
+		s.countMu.Lock()
+		count := s.totalCount.Text(10)
+		s.countMu.Unlock()
+
+		s.resultLogger.LogResult(
+			s.cfg.BenchmarkLabel,
+			s.cfg.MaxWorkers,
+			cnfFile,
+			count,
+			atomic.LoadInt32(&s.completedTasks),
+			atomic.LoadInt32(&s.timedOutTasks),
+			atomic.LoadInt32(&s.totalTasks),
+			wallTime,
+			tt.AvgTaskSec(),
+			tt.CurrentTimeoutSec(),
+			s.workerTracker.TotalWorkerCount(),
+		)
+	}
+
+	// Grace period: TUI polls every 500 ms — 3 s gives it 6 more snapshots
+	// with the correct final count before workers see "no tasks" and go idle.
+	time.Sleep(3 * time.Second)
+	return nil
 }
 
 func (s *MasterServer) LoadInitialTasks(cubes [][]int32) {
@@ -58,40 +146,53 @@ func (s *MasterServer) LoadInitialTasks(cubes [][]int32) {
 	s.taskManager.EnqueueCubes(cubes)
 }
 
+// GetTotalCount returns a copy of the current total model count.
 func (s *MasterServer) GetTotalCount() *big.Int {
-	s.countMutex.Lock()
-	defer s.countMutex.Unlock()
+	s.countMu.Lock()
+	defer s.countMu.Unlock()
+	if s.totalCount == nil {
+		return big.NewInt(0)
+	}
 	return new(big.Int).Set(s.totalCount)
+}
+
+// Shutdown stops the gRPC server. Call once after all Solve() calls are done.
+func (s *MasterServer) Shutdown() {
+	if s.grpcServer != nil {
+		fmt.Println("[master] Shutting down gRPC server…")
+		s.grpcServer.GracefulStop()
+	}
 }
 
 // GetTask is called by a worker that is ready for work.
 func (s *MasterServer) GetTask(ctx context.Context, req *pb.WorkerIdentity) (*pb.TaskPayload, error) {
 	s.workerTracker.RegisterWorker(req.WorkerId, req.Hostname)
-	
-	// ── MaxWorkers enforcement ────────────────────────────────────────────────
-	// If a concurrency cap is configured, only hand out a task when fewer than
-	// maxWorkers workers are currently busy. Workers that get -1 will sleep 2 s
-	// and retry — no coordination between VMs is needed.
-	if s.cfg.MaxWorkers > 0 {
-		if int(s.workerTracker.BusyWorkerCount()) >= s.cfg.MaxWorkers {
-			return &pb.TaskPayload{TaskId: -1}, nil
-		}
+
+	// MaxWorkers cap — return early before even looking at the queue
+	if s.cfg.MaxWorkers > 0 && int(s.workerTracker.BusyWorkerCount()) >= s.cfg.MaxWorkers {
+		return &pb.TaskPayload{TaskId: -1}, nil
 	}
 
+	// Snapshot per-problem pointers under read lock
+	s.mu.RLock()
+	tm := s.taskManager
+	tt := s.timeoutTracker
+	s.mu.RUnlock()
 
-	fmt.Printf("Worker [%s@%s] requested a task\n", req.WorkerId, req.Hostname)
+	// If Solve() hasn't been called yet (startup) or has just reset, tm is nil.
+	if tm == nil {
+		return &pb.TaskPayload{TaskId: -1}, nil
+	}
+
+	fmt.Printf("[master] Worker [%s@%s] requested a task\n", req.WorkerId, req.Hostname)
 
 	select {
-	case task := <-s.taskManager.TaskQueue():
-		// INJECT THE FRESHEST TIMEOUT HERE before sending to the worker
-		task.TimeoutSec = s.timeoutTracker.CurrentTimeoutSec()
-
-		s.taskManager.RecordAssignment(task.TaskId, req.Hostname)
+	case task := <-tm.TaskQueue():
+		task.TimeoutSec = tt.CurrentTimeoutSec()
+		tm.RecordAssignment(task.TaskId, req.Hostname)
 		s.workerTracker.AssignTask(req.WorkerId, req.Hostname, task.TaskId, task.Literals, float64(task.TimeoutSec))
-
-		fmt.Printf("Task %d assigned to worker %s@%s: cube=%v  timeout=%ds\n",
+		fmt.Printf("[master] Task %d → %s@%s  cube=%v  timeout=%ds\n",
 			task.TaskId, req.WorkerId, req.Hostname, task.Literals, task.TimeoutSec)
-
 		return task, nil
 
 	case <-time.After(5 * time.Second):
@@ -105,7 +206,17 @@ func (s *MasterServer) GetTask(ctx context.Context, req *pb.WorkerIdentity) (*pb
 
 // SubmitResult is called by a worker once ganak has finished (or timed out).
 func (s *MasterServer) SubmitResult(ctx context.Context, req *pb.TaskResult) (*pb.Empty, error) {
-	hostname, cube, exists := s.taskManager.GetAndRemoveTask(req.TaskId)
+	s.mu.RLock()
+	tm := s.taskManager
+	tt := s.timeoutTracker
+	doneCh := s.done
+	s.mu.RUnlock()
+
+	if tm == nil {
+		return nil, fmt.Errorf("SubmitResult called before any problem was loaded (task %d)", req.TaskId)
+	}
+
+	hostname, cube, exists := tm.GetAndRemoveTask(req.TaskId)
 	if !exists {
 		return nil, fmt.Errorf("received result for unknown task ID %d", req.TaskId)
 	}
@@ -113,26 +224,18 @@ func (s *MasterServer) SubmitResult(ctx context.Context, req *pb.TaskResult) (*p
 	s.workerTracker.UpdateWorkerResult(req.WorkerId, hostname, req.TimedOut)
 
 	if req.TimedOut {
-		fmt.Printf("Worker %s@%s TIMEOUT on task %d: cube=%v — splitting\n",
+		atomic.AddInt32(&s.timedOutTasks, 1)
+		fmt.Printf("[master] Worker %s@%s TIMEOUT task %d: cube=%v — splitting (JW)\n",
 			req.WorkerId, hostname, req.TaskId, cube)
-		//newCubes := SplitCube(cube)
-		newCubes := SplitCubeSmart(cube, s.taskManager.cnfData.Clauses)
-		
+		newCubes := SplitCubeSmart(cube, tm.cnfData.Clauses)
 		atomic.AddInt32(&s.totalTasks, int32(len(newCubes)))
-		s.taskManager.EnqueueCubes(newCubes)
+		tm.EnqueueCubes(newCubes)
+
 	} else {
-		// Record duration for dynamic timeout BEFORE parsing count
 		if req.DurationSec > 0 {
-			// 1. Get the old timeout BEFORE recording the new duration
-			oldTimeout := s.timeoutTracker.CurrentTimeoutSec()
-
-			// 2. Record the duration
-			s.timeoutTracker.RecordCompletion(req.DurationSec)
-
-			// 3. Get the new timeout
-			newTimeout := s.timeoutTracker.CurrentTimeoutSec()
-
-			// 4. ONLY broadcast if the integer value actually changed!
+			oldTimeout := tt.CurrentTimeoutSec()
+			tt.RecordCompletion(req.DurationSec)
+			newTimeout := tt.CurrentTimeoutSec()
 			if newTimeout != oldTimeout {
 				s.broadcaster.Broadcast(newTimeout)
 			}
@@ -140,23 +243,22 @@ func (s *MasterServer) SubmitResult(ctx context.Context, req *pb.TaskResult) (*p
 
 		val := new(big.Int)
 		if _, ok := val.SetString(req.Count, 10); !ok {
-			fmt.Printf("Worker %s@%s: failed to parse count %q for task %d\n",
+			fmt.Printf("[master] Worker %s@%s: failed to parse count %q for task %d\n",
 				req.WorkerId, hostname, req.Count, req.TaskId)
 		} else {
-			s.countMutex.Lock()
+			s.countMu.Lock()
 			s.totalCount.Add(s.totalCount, val)
-			s.countMutex.Unlock()
-			fmt.Printf("Worker %s@%s completed task %d: count=%s  avg=%.1fs  next_timeout=%ds\n",
+			s.countMu.Unlock()
+			fmt.Printf("[master] Worker %s@%s task %d: count=%s  avg=%.1fs  next_timeout=%ds\n",
 				req.WorkerId, hostname, req.TaskId, val.Text(10),
-				s.timeoutTracker.AvgTaskSec(),
-				s.timeoutTracker.CurrentTimeoutSec())
+				tt.AvgTaskSec(), tt.CurrentTimeoutSec())
 		}
 		atomic.AddInt32(&s.completedTasks, 1)
 	}
 
-	if s.taskManager.IsEmpty() {
+	if tm.IsEmpty() {
 		select {
-		case s.done <- struct{}{}:
+		case doneCh <- struct{}{}:
 		default:
 		}
 	}
@@ -166,32 +268,65 @@ func (s *MasterServer) SubmitResult(ctx context.Context, req *pb.TaskResult) (*p
 
 // ReportStatus receives a live CPU/RAM heartbeat from a worker.
 func (s *MasterServer) ReportStatus(ctx context.Context, req *pb.WorkerStatus) (*pb.Empty, error) {
-	hostname, _ := s.taskManager.HostnameForTask(req.TaskId)
+	s.mu.RLock()
+	tm := s.taskManager
+	s.mu.RUnlock()
+
+	var hostname string
+	if tm != nil {
+		hostname, _ = tm.HostnameForTask(req.TaskId)
+	}
 	s.workerTracker.UpdateLiveStats(req.WorkerId, hostname, req.CpuUsage, req.MemoryMb, req.MemoryPct)
 	return &pb.Empty{}, nil
 }
 
 // GetMasterStats is called by the TUI every 500 ms.
 func (s *MasterServer) GetMasterStats(ctx context.Context, _ *pb.Empty) (*pb.MasterStatsResponse, error) {
-	uptime := time.Since(s.startTime).Seconds()
+	s.mu.RLock()
+	tt := s.timeoutTracker
+	startTime := s.startTime
+	s.mu.RUnlock()
 
-	s.countMutex.Lock()
-	totalCount := s.totalCount.Text(10)
-	s.countMutex.Unlock()
+	uptime := time.Since(startTime).Seconds()
 
-	avgSec := s.timeoutTracker.AvgTaskSec()
-	currentTimeout := s.timeoutTracker.CurrentTimeoutSec()
+	s.countMu.Lock()
+	totalCount := ""
+	if s.totalCount != nil {
+		totalCount = s.totalCount.Text(10)
+	} else {
+		totalCount = "0"
+	}
+	s.countMu.Unlock()
 
-	// Convert the sentinel "no timeout" back to 0 for the TUI
-	currentTimeoutF := float64(currentTimeout)
-	if currentTimeout == math.MaxInt32 {
-		currentTimeoutF = 0
+	var avgSec float64
+	var currentTimeoutF float64
+	var dynamicTimeout bool
+
+	if tt != nil {
+		avgSec = tt.AvgTaskSec()
+		ct := tt.CurrentTimeoutSec()
+		currentTimeoutF = float64(ct)
+		if ct == math.MaxInt32 {
+			currentTimeoutF = 0
+		}
+		dynamicTimeout = s.cfg.DynamicTimeout
 	}
 
+	s.mu.RLock()
+	tm := s.taskManager
+	s.mu.RUnlock()
+
+	var activeTasks, completedTasks, queuedTasks int32
+	if tm != nil {
+		activeTasks = tm.ActiveCount()
+		queuedTasks = tm.QueuedCount()
+	}
+	completedTasks = atomic.LoadInt32(&s.completedTasks)
+
 	return &pb.MasterStatsResponse{
-		ActiveTasks:       s.taskManager.ActiveCount(),
-		CompletedTasks:    atomic.LoadInt32(&s.completedTasks),
-		QueuedTasks:       s.taskManager.QueuedCount(),
+		ActiveTasks:       activeTasks,
+		CompletedTasks:    completedTasks,
+		QueuedTasks:       queuedTasks,
 		TotalCount:        totalCount,
 		UptimeSec:         uptime,
 		TotalWorkers:      s.workerTracker.TotalWorkerCount(),
@@ -199,79 +334,34 @@ func (s *MasterServer) GetMasterStats(ctx context.Context, _ *pb.Empty) (*pb.Mas
 		Workers:           s.workerTracker.GetAllWorkerStats(),
 		AvgTaskSec:        avgSec,
 		CurrentTimeoutSec: currentTimeoutF,
-		DynamicTimeout:    s.cfg.DynamicTimeout,
+		DynamicTimeout:    dynamicTimeout,
 	}, nil
 }
 
-// Start listens on port and blocks until all tasks are done.
-func (s *MasterServer) Start(port string) error {
-	lis, err := net.Listen("tcp", ":"+port)
-	if err != nil {
-		return fmt.Errorf("failed to listen: %w", err)
-	}
-
-	grpcServer := grpc.NewServer()
-	pb.RegisterSolverServiceServer(grpcServer, s)
-
-	go func() {
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Printf("gRPC server error: %v", err)
-		}
-	}()
-
-	fmt.Printf("gRPC server listening on :%s\n", port)
-
-	<-s.done
-
-	wallTime := time.Since(s.startTime).Seconds()
-	fmt.Println("All tasks complete — holding for 3s so TUI captures final stats…")
-
-	// Write result log
-	if s.resultLogger != nil {
-		s.countMutex.Lock()
-		count := s.totalCount.Text(10)
-		s.countMutex.Unlock()
-
-		s.resultLogger.LogResult(
-			s.cfg.BenchmarkLabel,
-			s.cfg.MaxWorkers,
-			s.cnfFile,
-			count,
-			atomic.LoadInt32(&s.completedTasks),
-			atomic.LoadInt32(&s.timedOutTasks),
-			atomic.LoadInt32(&s.totalTasks),
-			wallTime,
-			s.timeoutTracker.AvgTaskSec(),
-			s.timeoutTracker.CurrentTimeoutSec(),
-			s.workerTracker.TotalWorkerCount(),
-		)
-	}
-
-	time.Sleep(3 * time.Second)
-	grpcServer.GracefulStop()
-	return nil
-}
-
-// SubscribeTimeoutUpdates streams timeout updates to a worker for as long
-// as the worker holds the stream open (i.e. while it has a task running).
+// SubscribeTimeoutUpdates streams timeout updates to a worker.
 func (s *MasterServer) SubscribeTimeoutUpdates(req *pb.WorkerIdentity, stream pb.SolverService_SubscribeTimeoutUpdatesServer) error {
 	ch := s.broadcaster.Subscribe(req.WorkerId)
 	defer s.broadcaster.Unsubscribe(req.WorkerId)
 
-	// Send the current timeout immediately so the worker is in sync
-	current := s.timeoutTracker.CurrentTimeoutSec()
-	if err := stream.Send(&pb.TimeoutUpdate{TimeoutSec: current}); err != nil {
-		return err
+	// Send the current timeout immediately
+	s.mu.RLock()
+	tt := s.timeoutTracker
+	s.mu.RUnlock()
+
+	if tt != nil {
+		if err := stream.Send(&pb.TimeoutUpdate{TimeoutSec: tt.CurrentTimeoutSec()}); err != nil {
+			return err
+		}
 	}
 
 	for {
 		select {
 		case update, ok := <-ch:
 			if !ok {
-				return nil // broadcaster closed (master shutting down)
+				return nil
 			}
 			if err := stream.Send(update); err != nil {
-				return err // worker disconnected
+				return err
 			}
 		case <-stream.Context().Done():
 			return nil
