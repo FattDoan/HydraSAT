@@ -8,6 +8,19 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta, positioning, fit, calc, shapes.geometric, shapes.misc}
 
+% ── Required packages for benchmark plot ───────────────
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{pgfplotstable}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{microtype}
+% ─────────────────────────────────────────────────────────────────────────────
+
+
+
+
 %% Remove the blank page after each chapter
 \makeatletter
 \xpatchcmd{\chapter}{\if@openright\cleardoublepage\else\clearpage\fi}{}{}{}
@@ -244,9 +257,7 @@ unnecessary computations on variables that are already logically defined by the 
 %%TODO: not tell too much
 \paragraph{Refined Residual Formula Processing} Ganak2 optimizes the leaves of the search tree 
 by switching to a modern SAT solver engine when the residual formula becomes simple enough. 
-This engine incorporates state-of-the-art SAT heuristics such as VSIDS branching, 
-\textbf{Luby-based restarts}, and \textbf{polarity caching}. Crucially, Ganak2 maintains a 
-seamless state transition, allowing the solver to move between the counting phase and the 
+Crucially, Ganak2 maintains a seamless state transition, allowing the solver to move between the counting phase and the 
 SAT phase without losing learned clauses or forcing an expensive restart of the component cache.
 
 The latest 2026 iteration of Ganak2 introduces native intra-node parallelism. 
@@ -535,7 +546,6 @@ the master provides centralized scheduling and result aggregation. As illustrate
 this design incorporates real-time telemetry via bidirectional streams and a dedicated TUI for live monitoring 
 of the global solving state.
 
-%%TODO: add box for physical nodes for every workers
 \begin{figure}[t]
 \centering
 \begin{tikzpicture}[
@@ -579,10 +589,21 @@ of the global solving state.
 \node[ganak, below=0.55cm of w3] (g3) {\texttt{ganak}};
 \node[ganak, below=0.55cm of wN] (gN) {\texttt{ganak}};
 
+%% Grouping box for Physical Node A
+\node[draw, dotted, thick, rounded corners=6pt, inner sep=8pt,
+      fit=(w1)(g1),
+      label={[font=\scriptsize\itshape, text=black!80]below:Physical Node A}] (nodea) {};
+
 %% Grouping box for Physical Node B
 \node[draw, dotted, thick, rounded corners=6pt, inner sep=8pt,
       fit=(w2)(w3)(g2)(g3),
       label={[font=\scriptsize\itshape, text=black!80]below:Physical Node B}] (nodeb) {};
+
+%% Grouping box for Physical Node
+\node[draw, dotted, thick, rounded corners=6pt, inner sep=8pt,
+      fit=(wN)(gN),
+      label={[font=\scriptsize\itshape, text=black!80]below:Physical Node \dots}] (nodec) {};
+
 
 %% Worker pool bounding box
 \node[draw, dashed, rounded corners=6pt, inner sep=14pt,
@@ -658,12 +679,22 @@ Docker Compose is used to orchestrate the master, the worker replicas, and the s
 This approach supports both fully containerized deployments and hybrid setups in which only part of the system is containerized.
 
 \paragraph{Terminal user interface}
-%TODO: add screenshot
-The terminal user interface is implemented in Go using Bubble Tea. Its architecture follows 
+The terminal user interface (cf. Figure~\ref{fig:tui}) is implemented in Go using Bubble Tea \cite{bubble_tea}. Its architecture follows 
 the event-driven style of the Elm framework: the model stores the current state of the system,
 updates react to events such as user input or gRPC responses, and the view renders the state to the terminal. 
 This structure is appropriate for a monitoring interface because it keeps rendering separate from data collection 
 and prevents the interface from blocking while waiting for network responses.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.9\textwidth]{tui_screenshot.png}
+\caption{%
+  Terminal user interface showing real-time statistics of the distributed solving process\@.
+  The top panel displays global metrics such as current total model count, active workers, and timeout thresholds.
+  Workers are separated by groups of physical nodes, with individual status indicators for each worker and its current task.
+}
+\label{fig:tui}
+\end{figure}
 
 \paragraph{Build system}
 A Makefile coordinates protocol generation, compilation, and deployment. 
@@ -671,8 +702,211 @@ It automates code generation from the Protocol Buffer definitions, builds the Go
 and launches the distributed environment with a single command. This reduces manual setup and ensures that the master, the workers, and the interface remain synchronized with the same communication schema.
 
 \section{Evaluation}
-%TODO: mention on cnfgen if use it
-\vspace{-1.5em}
+\label{sec:evaluation}
+
+\subsection{Experimental Setup}
+
+Due to hardware limitations we could not yet conduct a comprehensive evaluation
+on large-scale industrial benchmarks.
+Instead, we performed a preliminary study on randomly generated 3-SAT instances
+to validate the distributed counting pipeline and characterise its scaling behaviour.
+
+\paragraph{Hardware.}
+All experiments used two virtual machines, each allocated 8 CPU cores,
+constituting a \textbf{16-core worker pool} in the largest configuration.
+Workers were deployed as independent Python processes, each driving one
+\emph{Ganak2} subprocess as its backend solver.
+
+\paragraph{Benchmark instances.}
+The instances are 3-SAT formulas generated by \textbf{cnfgen}~\cite{cnf_gen}.
+Since it is difficult to predict how long a given instance will take to solve, 
+we filtered out instances that exceed the one-hour time limit when solved sequentially with Ganak2.
+We selected 4 instances with varying difficulty levels for this evaluation, denoted as $I_1$ to $I_4$ in order of increasing runtime.
+Trivial UNSAT generated instances benchmark is also discussed in Section~\ref{para:unsat}.
+
+\paragraph{Distributed configuration.}
+The initial cube decomposition was obtained by branching on the 6 most frequent
+variables in the original formula (producing $2^6 = 64$ initial cubes).
+Sub-cubes that exceeded the dynamic timeout were split further using a simple
+frequency-based selector: the variable appearing most often in the formula that
+had not yet been assigned in the cube was chosen as the branching point.
+The dynamic timeout scaling factor was set to $\alpha = 2$, so a new timeout of
+$\lfloor 2\bar{t} \rceil$ seconds was issued to all workers whenever the
+rolling average $\bar{t}$ of completed-task durations changed.
+
+\paragraph{Configurations compared.}
+Three configurations are evaluated:
+\begin{itemize}
+    \item \textbf{Sequential} — a single \textsc{Ganak\,2} process solving the
+          full formula directly (1 core, no framework overhead)
+    \item \textbf{\#SAT-8} — the distributed framework with 8 workers
+    \item \textbf{\#SAT-16} — the distributed framework with 16 workers
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection{Results}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Wall-clock times and the resulting speedups over the sequential baseline are
+reported in Table~\ref{tab:results}.  Figure~\ref{fig:walltime} plots the same
+data on a logarithmic axis to make both the fast and slow instances legible on
+the same scale.
+
+\begin{table}[h]
+\centering
+\caption{Wall-clock times (seconds) and speedup relative to sequential
+\textsc{Ganak\,2} for four 3-SAT instances.
+Speedup $> 1$ indicates improvement over the baseline.}
+\label{tab:results}
+\small
+\begin{tabular}{l
+                S[table-format=4.1]
+                S[table-format=4.1] S[table-format=2.1]
+                S[table-format=4.1] S[table-format=2.1]}
+\toprule
+ & {Sequential} & \multicolumn{2}{c}{\#SAT-8} & \multicolumn{2}{c}{\#SAT-16} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+Instance & {Time (s)} & {Time (s)} & {Speedup} & {Time (s)} & {Speedup} \\
+\midrule
+$I_1$ & 723.4  &  73.8  & 9.8\texttimes  &  65.0  & 11.1\texttimes \\
+$I_2$ & 2350.7 & 870.8  & 2.7\texttimes  & 540.3  &  4.4\texttimes \\
+$I_3$ & 505.2  & 206.2  & 2.4\texttimes  & 208.4  &  2.4\texttimes \\
+$I_4$ & 1967.4 & 1151.7 & 1.7\texttimes  & 756.5  &  2.6\texttimes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    bar width       = 9pt,
+    ymode           = log,
+    log ticks with fixed point,
+    width           = \linewidth,
+    height          = 6.8cm,
+    symbolic x coords = {$I_1$,$I_2$,$I_3$,$I_4$},
+    xtick           = data,
+    x tick label style = {font=\small},
+    ylabel          = {Wall-clock time (s, log scale)},
+    ylabel style    = {font=\small},
+    ymin            = 30,
+    ymax            = 5000,
+    ytick           = {60,120,240,480,1000,2000},
+    yticklabels     = {60,120,240,480,1000,2000},
+    yticklabel style= {font=\small},
+    legend style    = {
+        at          = {(0.5,1.02)},
+        anchor      = south,
+        legend columns = 3,
+        font        = \small,
+        draw        = none,
+        /tikz/every even column/.append style = {column sep=0.5em},
+    },
+    enlarge x limits = 0.18,
+    grid            = major,
+    grid style      = {dotted, gray!50},
+    major tick length = 2pt,
+    tick align      = outside,
+]
+% Sequential
+\addplot[fill=gray!60, draw=gray!80] coordinates {
+    ($I_1$, 723.402)
+    ($I_2$, 2350.699)
+    ($I_3$, 505.174)
+    ($I_4$, 1967.435)
+};
+\addlegendentry{Sequential (1 core)}
+
+% HydraSAT-8
+\addplot[fill=blue!55, draw=blue!75] coordinates {
+    ($I_1$, 73.795)
+    ($I_2$, 870.756)
+    ($I_3$, 206.219)
+    ($I_4$, 1151.688)
+};
+\addlegendentry{\#SAT-8 (8 cores)}
+
+% HydraSAT-16
+\addplot[fill=teal!60, draw=teal!80] coordinates {
+    ($I_1$, 64.954)
+    ($I_2$, 540.250)
+    ($I_3$, 208.447)
+    ($I_4$, 756.547)
+};
+\addlegendentry{\#SAT-16 (16 cores)}
+
+% Speedup annotations above HydraSAT-16 bars
+\node[font=\scriptsize, above=2pt, xshift=14pt] at (axis cs:$I_1$, 64.954)   {11.1\texttimes};
+\node[font=\scriptsize, above=2pt, xshift=14pt] at (axis cs:$I_2$, 540.250)  {4.4\texttimes};
+\node[font=\scriptsize, above=2pt, xshift=14pt] at (axis cs:$I_3$, 208.447)  {2.4\texttimes};
+\node[font=\scriptsize, above=2pt, xshift=14pt] at (axis cs:$I_4$, 756.547)  {2.6\texttimes};
+
+\end{axis}
+\end{tikzpicture}
+\caption{Wall-clock time comparison on a logarithmic scale.
+Speedup labels above the \#SAT-16 bars are relative to the sequential baseline.
+Bars below the sequential bar indicate a speedup; the smaller the bar, the faster.}
+\label{fig:walltime}
+\end{figure}
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection{Discussion}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\paragraph{Overall speedup.}
+The distributed framework consistently outperforms sequential solving on all
+four SAT instances.
+Across the two distributed configurations, speedups range from
+$1.7\times$ to $11.1\times$, confirming that the divide-and-count approach
+is effective on this class of benchmarks.
+
+\paragraph{Non-linear and instance-dependent scaling.}
+The speedup is far from uniform.
+Instance $I_1$ achieves a near-ideal $11.1\times$ speedup with 16 cores,
+suggesting that the 64 initial cubes were well-balanced and that most
+sub-problems required comparable solving time.
+Instances $I_2$ and $I_4$, by contrast, yield only $4.4\times$ and $2.6\times$
+respectively at 16 cores despite the same configuration.
+This disparity points to an imbalanced work distribution in which a small number
+of cubes dominate total runtime, and additional workers cannot accelerate them
+because they are still waiting for a single bottleneck sub-task to complete or
+time out. Using much more advanced splitting heuristics that take into account the structure of the formula and
+the behaviour of the solver on previous cubes is a promising direction to mitigate this issue.
+
+\paragraph{Marginal gain from 8 to 16 cores.}
+Instance $I_3$ is a notable outlier: both the 8- and 16-core configurations
+finish in almost identical times ($206$\,s vs.\ $208$\,s).
+A likely explanation is that the bottleneck lies not in worker count but in the
+timeout parameter: if one or two difficult sub-cubes dominate, increasing
+parallelism only changes which workers are idle, not when the last cube finishes.
+Fine-tuning $\alpha$ per problem class or implementing a more sophisticated 
+timeout policy that considers the distribution of observed runtimes 
+could help mitigate this problem and allow better scaling with more workers.
+
+\paragraph{Highly-constrained and unsatisfiable instances.} \label{para:unsat}
+We have also experimented with formulas near or above the phase-transition threshold, which are often
+\emph{unsatisfiable} and are trivially recognised as such by Ganak2
+through unit propagation and conflict analysis in under one or two seconds.
+In this regime the distributed framework is \emph{slower} than sequential:
+the gRPC round-trip, cube-queue management, and the initial 64-cube expansion
+add 6–12 seconds of overhead that dwarf the actual solving time.
+For benchmarks where a fast SAT or UNSAT decision is expected,
+running the sequential solver directly and falling back to the distributed
+framework only on timeout is a straightforward strategy that would eliminate
+this overhead entirely.
+
+\paragraph{Summary.}
+Our framework demonstrates clear speedups on satisfiable instances of moderate
+hardness, with the best result reaching $11.1\times$ at 16 cores.
+The principal bottlenecks identified are unbalanced cube decomposition and
+suboptimal timeout calibration.
+Both are easy targets for future refinement, and we expect that 
+significant further speedups are possible with more sophisticated heuristics and adaptive policies.
+   
 \chapter{Conclusion and future work}
 \section{Conclusion}
 \vspace{-1.5em}
@@ -689,7 +923,7 @@ Preliminary results indicate that while the framework achieves significant speed
 \vspace{-1.5em}
 Preliminary results indicate that the framework can reduce overall solving time 
 on instances with uneven subproblem difficulty, although its effectiveness 
-depends on the quality of the initial decomposition and the variability of the backend solver.
+highly depends on the heuristic used.
 
 A primary area of improvement lies in the cube decomposition process, 
 where the integration of structural heuristics such as tree decomposition or VSIDS-based \cite{VSIDS}(Variable State Independent Decaying Sum) variable 

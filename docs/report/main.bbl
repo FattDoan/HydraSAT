@@ -873,6 +873,36 @@
       \verb 10.1017/S0022481200053603
       \endverb
     \endentry
+    \entry{bubble_tea}{misc}{}{}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://github.com/charmbracelet/bubbletea}}
+      \field{title}{Bubble Tea framework}
+    \endentry
+    \entry{cnf_gen}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=276745f6c03e3249e7241609b8934111}{%
+           family={Lauria},
+           familyi={L\bibinitperiod},
+           given={Massimo},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{276745f6c03e3249e7241609b8934111}
+      \strng{fullhash}{276745f6c03e3249e7241609b8934111}
+      \strng{fullhashraw}{276745f6c03e3249e7241609b8934111}
+      \strng{bibnamehash}{276745f6c03e3249e7241609b8934111}
+      \strng{authorbibnamehash}{276745f6c03e3249e7241609b8934111}
+      \strng{authornamehash}{276745f6c03e3249e7241609b8934111}
+      \strng{authorfullhash}{276745f6c03e3249e7241609b8934111}
+      \strng{authorfullhashraw}{276745f6c03e3249e7241609b8934111}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://massimolauria.net/cnfgen/}}
+      \field{title}{cnfgen}
+    \endentry
     \entry{VSIDS}{inproceedings}{}{}
       \name{author}{5}{}{%
         {{hash=5b467b1e4271559b03ceb8c16befd89e}{%

@@ -8,24 +8,36 @@
 \contentsline {paragraph}{Formula Simplification}{5}{paragraph*.3}%
 \contentsline {paragraph}{Refined Residual Formula Processing}{5}{paragraph*.4}%
 \contentsline {chapter}{\numberline {4}My contribution}{5}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Work partitioning via cube decomposition and dynamic load balancing}{6}{section.4.1}%
-\contentsline {paragraph}{Cube decomposition}{6}{paragraph*.5}%
+\contentsline {section}{\numberline {4.1}Work partitioning via cube decomposition and dynamic load balancing}{5}{section.4.1}%
+\contentsline {paragraph}{Cube decomposition}{5}{paragraph*.5}%
 \contentsline {paragraph}{Adaptive timeout}{6}{paragraph*.6}%
 \contentsline {paragraph}{Branching heuristics}{6}{paragraph*.7}%
-\contentsline {paragraph}{Cube splitting function}{7}{paragraph*.8}%
+\contentsline {paragraph}{Cube splitting function}{6}{paragraph*.8}%
 \contentsline {section}{\numberline {4.2}Master-side}{7}{section.4.2}%
 \contentsline {section}{\numberline {4.3}Worker-side}{9}{section.4.3}%
-\contentsline {chapter}{\numberline {5}Implementation and evaluation}{9}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Implementation}{9}{section.5.1}%
-\contentsline {paragraph}{General Architecture}{9}{paragraph*.11}%
-\contentsline {paragraph}{Communication layer}{9}{paragraph*.13}%
-\contentsline {paragraph}{Master implementation}{11}{paragraph*.14}%
+\contentsline {chapter}{\numberline {5}Implementation and evaluation}{10}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Implementation}{10}{section.5.1}%
+\contentsline {paragraph}{General Architecture}{10}{paragraph*.11}%
+\contentsline {paragraph}{Communication layer}{10}{paragraph*.13}%
+\contentsline {paragraph}{Master implementation}{10}{paragraph*.14}%
 \contentsline {paragraph}{Worker implementation}{11}{paragraph*.15}%
 \contentsline {paragraph}{Containerization}{11}{paragraph*.16}%
-\contentsline {paragraph}{Terminal user interface}{12}{paragraph*.17}%
-\contentsline {paragraph}{Build system}{12}{paragraph*.18}%
+\contentsline {paragraph}{Terminal user interface}{11}{paragraph*.17}%
+\contentsline {paragraph}{Build system}{11}{paragraph*.19}%
 \contentsline {section}{\numberline {5.2}Evaluation}{12}{section.5.2}%
-\contentsline {chapter}{\numberline {6}Conclusion and future work}{12}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Conclusion}{12}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Limitations and improvements}{12}{section.6.2}%
-\contentsline {chapter}{Bibliography}{14}{chapter*.19}%
+\contentsline {subsection}{\numberline {5.2.1}Experimental Setup}{12}{subsection.5.2.1}%
+\contentsline {paragraph}{Hardware.}{12}{paragraph*.20}%
+\contentsline {paragraph}{Benchmark instances.}{12}{paragraph*.21}%
+\contentsline {paragraph}{Distributed configuration.}{12}{paragraph*.22}%
+\contentsline {paragraph}{Configurations compared.}{12}{paragraph*.23}%
+\contentsline {subsection}{\numberline {5.2.2}Results}{12}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}Discussion}{12}{subsection.5.2.3}%
+\contentsline {paragraph}{Overall speedup.}{12}{paragraph*.26}%
+\contentsline {paragraph}{Non-linear and instance-dependent scaling.}{13}{paragraph*.27}%
+\contentsline {paragraph}{Marginal gain from 8 to 16 cores.}{13}{paragraph*.28}%
+\contentsline {paragraph}{Highly-constrained and unsatisfiable instances.}{13}{paragraph*.29}%
+\contentsline {paragraph}{Summary.}{14}{paragraph*.30}%
+\contentsline {chapter}{\numberline {6}Conclusion and future work}{14}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Conclusion}{14}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Limitations and improvements}{14}{section.6.2}%
+\contentsline {chapter}{Bibliography}{15}{chapter*.31}%
